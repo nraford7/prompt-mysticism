@@ -697,6 +697,207 @@
     }
 
     /* ------------------------------------------------------------------ */
+    /* THREE-CARD SPREAD                                                   */
+    /* ------------------------------------------------------------------ */
+    #spread-display {
+      display: none;
+      margin-bottom: 3rem;
+    }
+
+    .spread-row {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      max-width: 920px;
+      margin: 0 auto 3rem;
+    }
+
+    .spread-slot {
+      flex: 1;
+      max-width: 280px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Position label above card */
+    .spread-label {
+      font-family: var(--sans);
+      font-size: 0.6rem;
+      font-variant: small-caps;
+      letter-spacing: 0.28em;
+      text-transform: lowercase;
+      color: var(--gold-dim);
+      text-align: center;
+      margin-bottom: 0.75rem;
+      opacity: 0.7;
+      line-height: 1.5;
+    }
+
+    .spread-label strong {
+      display: block;
+      font-family: var(--sans);
+      font-size: 0.7rem;
+      font-weight: 400;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.15rem;
+    }
+
+    /* Spread card scene — smaller perspective for side-by-side */
+    .spread-card-scene {
+      perspective: 1000px;
+      width: 100%;
+    }
+
+    .spread-card-flipper {
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .spread-card-flipper.is-flipped {
+      transform: rotateY(180deg);
+    }
+
+    /* Reuse card face styles but scoped to spread */
+    .spread-card-flipper .card-face {
+      width: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 3px;
+    }
+
+    .spread-card-flipper .card-back {
+      padding: 2.5rem 1.5rem;
+      min-height: 200px;
+    }
+
+    .spread-card-flipper .card-front {
+      padding: 1.8rem 1.2rem 1.5rem;
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform: rotateY(180deg);
+    }
+
+    /* Smaller sigil for spread cards */
+    .spread-card-flipper .card-sigil {
+      width: 70px;
+      height: 70px;
+    }
+
+    .spread-card-flipper .card-sigil::after {
+      width: 38px;
+      height: 38px;
+    }
+
+    .spread-card-flipper .sigil-inner::before {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Smaller text for spread cards */
+    .spread-card-flipper .card-axiom {
+      font-size: clamp(0.88rem, 1.8vw, 1rem);
+      line-height: 1.75;
+      margin-bottom: 1.2rem;
+    }
+
+    .spread-card-flipper .card-phase {
+      font-size: 0.52rem;
+      letter-spacing: 0.22em;
+      margin-bottom: 0.4rem;
+    }
+
+    .spread-card-flipper .card-step {
+      font-size: 0.58rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .spread-card-flipper .card-id {
+      font-size: 0.52rem;
+      top: 1.2rem;
+      right: 1.2rem;
+    }
+
+    .spread-card-flipper .card-latin {
+      font-size: 0.72rem;
+    }
+
+    .spread-card-flipper .card-draw-label {
+      font-size: 0.6rem;
+    }
+
+    /* Sequential reveal — locked cards are subdued */
+    .spread-slot.is-locked {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .spread-slot.is-locked .card-back {
+      cursor: default;
+    }
+
+    .spread-slot.is-locked .card-back:hover {
+      border-color: var(--gold-dim);
+      box-shadow: none;
+    }
+
+    /* Unlocked but not yet revealed — full opacity, clickable */
+    .spread-slot.is-active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .spread-slot.is-active .card-back {
+      cursor: pointer;
+    }
+
+    /* Revealed card — stays visible */
+    .spread-slot.is-revealed {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Spread nudge + actions */
+    #spread-nudge {
+      max-width: 600px;
+      margin: 0 auto 1.5rem;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.4s ease 0.3s, transform 0.4s ease 0.3s;
+      pointer-events: none;
+    }
+
+    #spread-nudge.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .spread-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      max-width: 500px;
+      margin: 0 auto;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.4s ease 0.3s, transform 0.4s ease 0.3s;
+      pointer-events: none;
+    }
+
+    .spread-actions.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    /* ------------------------------------------------------------------ */
     /* HIDDEN PLACEHOLDERS                                                  */
     /* ------------------------------------------------------------------ */
     #mode-selector,
@@ -725,6 +926,26 @@
       .card-back,
       .card-front {
         padding: 2.5rem 1.5rem 2rem;
+      }
+
+      /* Spread stacks vertically on mobile */
+      .spread-row {
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+      }
+
+      .spread-slot {
+        max-width: 100%;
+        width: 100%;
+      }
+
+      .spread-card-flipper .card-back {
+        padding: 2rem 1.5rem;
+      }
+
+      .spread-card-flipper .card-front {
+        padding: 1.5rem 1.2rem 1.2rem;
       }
     }
   </style>
@@ -859,7 +1080,119 @@
         </div>
       </div>
 
-      <!-- Prompt area — hidden until Task 5 -->
+      <!-- Three-card spread — hidden until mode selector activates it -->
+      <div id="spread-display">
+        <div class="spread-row">
+
+          <!-- Card 1: DIVINATIO -->
+          <div class="spread-slot is-active" data-slot="0">
+            <div class="spread-label">
+              <strong>Divinatio</strong>
+              What is the situation?
+            </div>
+            <div class="spread-card-scene">
+              <div class="spread-card-flipper" data-spread-flipper="0">
+                <div class="card-face card-back" data-spread-back="0" role="button" tabindex="0" aria-label="Reveal first card">
+                  <div class="card-back-corner tl"></div>
+                  <div class="card-back-corner tr"></div>
+                  <div class="card-back-corner bl"></div>
+                  <div class="card-back-corner br"></div>
+                  <div class="card-sigil">
+                    <div class="sigil-inner"></div>
+                    <div class="sigil-lines"></div>
+                  </div>
+                  <span class="card-draw-label">Reveal</span>
+                </div>
+                <div class="card-face card-front" data-spread-front="0" aria-hidden="true">
+                  <span class="card-id" data-spread-id="0"></span>
+                  <p class="card-phase" data-spread-phase="0"></p>
+                  <p class="card-step" data-spread-step="0"></p>
+                  <div class="card-divider"></div>
+                  <p class="card-axiom" data-spread-axiom="0"></p>
+                  <p class="card-latin" data-spread-latin="0"></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: POTESTAS -->
+          <div class="spread-slot is-locked" data-slot="1">
+            <div class="spread-label">
+              <strong>Potestas</strong>
+              What is the working?
+            </div>
+            <div class="spread-card-scene">
+              <div class="spread-card-flipper" data-spread-flipper="1">
+                <div class="card-face card-back" data-spread-back="1" role="button" tabindex="0" aria-label="Reveal second card">
+                  <div class="card-back-corner tl"></div>
+                  <div class="card-back-corner tr"></div>
+                  <div class="card-back-corner bl"></div>
+                  <div class="card-back-corner br"></div>
+                  <div class="card-sigil">
+                    <div class="sigil-inner"></div>
+                    <div class="sigil-lines"></div>
+                  </div>
+                  <span class="card-draw-label">Reveal</span>
+                </div>
+                <div class="card-face card-front" data-spread-front="1" aria-hidden="true">
+                  <span class="card-id" data-spread-id="1"></span>
+                  <p class="card-phase" data-spread-phase="1"></p>
+                  <p class="card-step" data-spread-step="1"></p>
+                  <div class="card-divider"></div>
+                  <p class="card-axiom" data-spread-axiom="1"></p>
+                  <p class="card-latin" data-spread-latin="1"></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: JUDICIUM -->
+          <div class="spread-slot is-locked" data-slot="2">
+            <div class="spread-label">
+              <strong>Judicium</strong>
+              What should you watch for?
+            </div>
+            <div class="spread-card-scene">
+              <div class="spread-card-flipper" data-spread-flipper="2">
+                <div class="card-face card-back" data-spread-back="2" role="button" tabindex="0" aria-label="Reveal third card">
+                  <div class="card-back-corner tl"></div>
+                  <div class="card-back-corner tr"></div>
+                  <div class="card-back-corner bl"></div>
+                  <div class="card-back-corner br"></div>
+                  <div class="card-sigil">
+                    <div class="sigil-inner"></div>
+                    <div class="sigil-lines"></div>
+                  </div>
+                  <span class="card-draw-label">Reveal</span>
+                </div>
+                <div class="card-face card-front" data-spread-front="2" aria-hidden="true">
+                  <span class="card-id" data-spread-id="2"></span>
+                  <p class="card-phase" data-spread-phase="2"></p>
+                  <p class="card-step" data-spread-step="2"></p>
+                  <div class="card-divider"></div>
+                  <p class="card-axiom" data-spread-axiom="2"></p>
+                  <p class="card-latin" data-spread-latin="2"></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Spread nudge — appears after all three revealed -->
+        <div id="spread-nudge">
+          <p class="nudge-text">Read them together. What story do they tell about your question?</p>
+        </div>
+
+        <!-- Spread actions -->
+        <div class="spread-actions" id="spread-actions">
+          <button class="btn-draw-again" id="btn-spread-again">Draw Another Spread</button>
+          <button class="btn-take-it" id="btn-spread-take">Take This With You</button>
+          <span class="copy-confirm" id="spread-copy-confirm">Copied to clipboard</span>
+        </div>
+      </div>
+
+      <!-- Prompt area — hidden placeholder -->
       <div id="prompt-area"></div>
 
     </div>
@@ -1132,6 +1465,328 @@
       });
 
       questionReset.addEventListener('click', clearQuestion);
+
+      // ----------------------------------------------------------------
+      // THREE-CARD SPREAD
+      // ----------------------------------------------------------------
+      var spreadDisplay     = document.getElementById('spread-display');
+      var spreadNudge       = document.getElementById('spread-nudge');
+      var spreadActions     = document.getElementById('spread-actions');
+      var btnSpreadAgain    = document.getElementById('btn-spread-again');
+      var btnSpreadTake     = document.getElementById('btn-spread-take');
+      var spreadCopyConfirm = document.getElementById('spread-copy-confirm');
+
+      // Spread state
+      var spreadCards   = [null, null, null];   // axiom objects
+      var spreadRevealed = [false, false, false];
+      var spreadNextReveal = 0;                 // which card is next to flip (0,1,2)
+
+      // DOM refs for the 3 slots
+      var spreadSlots    = document.querySelectorAll('.spread-slot');
+      var spreadFlippers = [
+        document.querySelector('[data-spread-flipper="0"]'),
+        document.querySelector('[data-spread-flipper="1"]'),
+        document.querySelector('[data-spread-flipper="2"]')
+      ];
+      var spreadBacks = [
+        document.querySelector('[data-spread-back="0"]'),
+        document.querySelector('[data-spread-back="1"]'),
+        document.querySelector('[data-spread-back="2"]')
+      ];
+
+      // ----------------------------------------------------------------
+      // Phase-weighted random selection
+      // ----------------------------------------------------------------
+      function pickWeighted(preferredPrefixes, exclude) {
+        var preferred = [];
+        var fallback  = [];
+
+        for (var i = 0; i < axioms.length; i++) {
+          var ax = axioms[i];
+          // Skip already-drawn axioms
+          var dominated = false;
+          for (var j = 0; j < exclude.length; j++) {
+            if (exclude[j] && exclude[j].id === ax.id && exclude[j].text === ax.text) {
+              dominated = true;
+              break;
+            }
+          }
+          if (dominated) continue;
+
+          var inPreferred = false;
+          for (var k = 0; k < preferredPrefixes.length; k++) {
+            if (ax.phase && ax.phase.indexOf(preferredPrefixes[k]) === 0) {
+              inPreferred = true;
+              break;
+            }
+          }
+
+          if (inPreferred) {
+            preferred.push(ax);
+          }
+          fallback.push(ax);
+        }
+
+        var pool = preferred.length > 0 ? preferred : fallback;
+        if (pool.length === 0) return null;
+        return pool[Math.floor(Math.random() * pool.length)];
+      }
+
+      // ----------------------------------------------------------------
+      // Draw three cards with phase weighting
+      // ----------------------------------------------------------------
+      function drawSpreadCards() {
+        var drawn = [];
+
+        // Card 1: Phase I or Phase II
+        var c1 = pickWeighted(['Phase I', 'Phase II'], drawn);
+        drawn.push(c1);
+
+        // Card 2: Phase III
+        var c2 = pickWeighted(['Phase III'], drawn);
+        drawn.push(c2);
+
+        // Card 3: Phase IV or The Thirteen Laws
+        var c3 = pickWeighted(['Phase IV', 'The Thirteen Laws'], drawn);
+        drawn.push(c3);
+
+        return drawn;
+      }
+
+      // ----------------------------------------------------------------
+      // Populate a spread card's front face
+      // ----------------------------------------------------------------
+      function populateSpreadCard(index, axiom) {
+        if (!axiom) return;
+        var el = function (attr) {
+          return document.querySelector('[data-spread-' + attr + '="' + index + '"]');
+        };
+
+        el('id').textContent    = axiom.id;
+        el('phase').textContent = axiom.phase;
+        el('step').textContent  = buildStepLine(axiom);
+        el('axiom').textContent = axiom.text;
+
+        var latinEl = el('latin');
+        if (axiom.latin && !axiom.id.startsWith('Law')) {
+          latinEl.textContent = axiom.latin;
+          latinEl.style.display = '';
+        } else {
+          latinEl.textContent = '';
+          latinEl.style.display = 'none';
+        }
+      }
+
+      // ----------------------------------------------------------------
+      // Sync flipper height for a spread card
+      // ----------------------------------------------------------------
+      function syncSpreadFlipperHeight(index) {
+        var front = document.querySelector('[data-spread-front="' + index + '"]');
+        var flipper = spreadFlippers[index];
+        if (front && flipper) {
+          flipper.style.height = front.offsetHeight + 'px';
+        }
+      }
+
+      // ----------------------------------------------------------------
+      // Initialize spread (draw cards, reset state, set up slots)
+      // ----------------------------------------------------------------
+      function initSpread() {
+        if (!axioms.length) {
+          console.warn('Axioms not loaded yet.');
+          return;
+        }
+
+        // Reset state
+        spreadRevealed = [false, false, false];
+        spreadNextReveal = 0;
+        spreadNudge.classList.remove('is-visible');
+        spreadActions.classList.remove('is-visible');
+        spreadCopyConfirm.classList.remove('is-visible');
+
+        // Draw three cards
+        spreadCards = drawSpreadCards();
+
+        // Populate all three fronts
+        for (var i = 0; i < 3; i++) {
+          populateSpreadCard(i, spreadCards[i]);
+
+          // Reset flipper state
+          spreadFlippers[i].classList.remove('is-flipped');
+          spreadFlippers[i].style.height = '';
+
+          // Reset back/front aria
+          var back = document.querySelector('[data-spread-back="' + i + '"]');
+          var front = document.querySelector('[data-spread-front="' + i + '"]');
+          if (back) back.setAttribute('aria-hidden', 'false');
+          if (front) front.setAttribute('aria-hidden', 'true');
+        }
+
+        // Set slot states: first is active, rest are locked
+        updateSlotStates();
+      }
+
+      // ----------------------------------------------------------------
+      // Update slot visual states based on reveal progress
+      // ----------------------------------------------------------------
+      function updateSlotStates() {
+        for (var i = 0; i < 3; i++) {
+          var slot = spreadSlots[i];
+          slot.classList.remove('is-locked', 'is-active', 'is-revealed');
+
+          if (spreadRevealed[i]) {
+            slot.classList.add('is-revealed');
+          } else if (i === spreadNextReveal) {
+            slot.classList.add('is-active');
+          } else {
+            slot.classList.add('is-locked');
+          }
+        }
+      }
+
+      // ----------------------------------------------------------------
+      // Reveal a spread card
+      // ----------------------------------------------------------------
+      function revealSpreadCard(index) {
+        if (index !== spreadNextReveal) return;
+        if (spreadRevealed[index]) return;
+
+        var flipperEl = spreadFlippers[index];
+        var back = document.querySelector('[data-spread-back="' + index + '"]');
+        var front = document.querySelector('[data-spread-front="' + index + '"]');
+
+        // Flip it
+        flipperEl.classList.add('is-flipped');
+        if (back) back.setAttribute('aria-hidden', 'true');
+        if (front) front.setAttribute('aria-hidden', 'false');
+        spreadRevealed[index] = true;
+        spreadNextReveal = index + 1;
+
+        // Sync height and update states after flip transition
+        setTimeout(function () {
+          syncSpreadFlipperHeight(index);
+          updateSlotStates();
+
+          // If all three revealed, show nudge + actions
+          if (spreadRevealed[0] && spreadRevealed[1] && spreadRevealed[2]) {
+            setTimeout(function () {
+              spreadNudge.classList.add('is-visible');
+              spreadActions.classList.add('is-visible');
+            }, 200);
+          }
+        }, 580);
+      }
+
+      // ----------------------------------------------------------------
+      // Build spread prompt
+      // ----------------------------------------------------------------
+      function buildSpreadPrompt() {
+        if (!spreadCards[0] || !spreadCards[1] || !spreadCards[2]) return '';
+        var q = currentQuestion || '';
+
+        var prompt =
+          'You are working on: ' + q + '\n\n' +
+          'Three principles for your situation:\n\n' +
+          'DIVINATIO (Assessment):\n' +
+          '"' + spreadCards[0].text + '"\n' +
+          buildAttribution(spreadCards[0]) + '\n\n' +
+          'POTESTAS (Action):\n' +
+          '"' + spreadCards[1].text + '"\n' +
+          buildAttribution(spreadCards[1]) + '\n\n' +
+          'JUDICIUM (Integration):\n' +
+          '"' + spreadCards[2].text + '"\n' +
+          buildAttribution(spreadCards[2]) + '\n\n' +
+          'Use these three principles as a framework:\n' +
+          '- What does the first reveal about your situation?\n' +
+          '- What does the second suggest about how to proceed?\n' +
+          '- What does the third warn you to watch for?\n\n' +
+          'Begin.';
+
+        return prompt;
+      }
+
+      // ----------------------------------------------------------------
+      // Spread: Take This With You
+      // ----------------------------------------------------------------
+      function spreadTakeWithYou() {
+        var prompt = buildSpreadPrompt();
+        if (!prompt) return;
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(prompt)
+            .then(function () {
+              console.log('Copied spread prompt to clipboard:\n\n' + prompt);
+              showSpreadCopyConfirm();
+            })
+            .catch(function () {
+              console.log('Spread prompt:\n\n' + prompt);
+              showSpreadCopyConfirm();
+            });
+        } else {
+          console.log('Spread prompt:\n\n' + prompt);
+          showSpreadCopyConfirm();
+        }
+      }
+
+      function showSpreadCopyConfirm() {
+        spreadCopyConfirm.classList.add('is-visible');
+        setTimeout(function () {
+          spreadCopyConfirm.classList.remove('is-visible');
+        }, 2400);
+      }
+
+      // ----------------------------------------------------------------
+      // Spread: Reset
+      // ----------------------------------------------------------------
+      function resetSpread() {
+        spreadActions.classList.remove('is-visible');
+        spreadNudge.classList.remove('is-visible');
+        spreadCopyConfirm.classList.remove('is-visible');
+
+        // Reset flippers
+        for (var i = 0; i < 3; i++) {
+          spreadFlippers[i].classList.remove('is-flipped');
+          spreadFlippers[i].style.height = '';
+          var back = document.querySelector('[data-spread-back="' + i + '"]');
+          var front = document.querySelector('[data-spread-front="' + i + '"]');
+          if (back) back.setAttribute('aria-hidden', 'false');
+          if (front) front.setAttribute('aria-hidden', 'true');
+        }
+
+        spreadCards = [null, null, null];
+        spreadRevealed = [false, false, false];
+        spreadNextReveal = 0;
+
+        // Re-init with new cards
+        setTimeout(function () {
+          initSpread();
+        }, 400);
+      }
+
+      // ----------------------------------------------------------------
+      // Spread event listeners — card click/keyboard
+      // ----------------------------------------------------------------
+      for (var s = 0; s < spreadBacks.length; s++) {
+        (function (idx) {
+          spreadBacks[idx].addEventListener('click', function () {
+            revealSpreadCard(idx);
+          });
+          spreadBacks[idx].addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              revealSpreadCard(idx);
+            }
+          });
+        })(s);
+      }
+
+      btnSpreadAgain.addEventListener('click', resetSpread);
+      btnSpreadTake.addEventListener('click', spreadTakeWithYou);
+
+      // Expose drawSpread for Task 6 mode selector to call
+      window.drawSpread = function () {
+        initSpread();
+      };
 
     })();
   </script>
