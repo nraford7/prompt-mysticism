@@ -37,7 +37,6 @@
       font-family: var(--sans);
       line-height: 1.7;
       min-height: 100vh;
-      /* Subtle noise-like gradient to break up flat black */
       background-image:
         radial-gradient(ellipse at 20% 0%, #1a1428 0%, transparent 60%),
         radial-gradient(ellipse at 80% 100%, #0d1420 0%, transparent 60%);
@@ -57,7 +56,6 @@
       position: relative;
     }
 
-    /* Faint horizontal rule as atmospheric element */
     #intro::after {
       content: '';
       position: absolute;
@@ -105,7 +103,6 @@
       max-width: 520px;
     }
 
-    /* Ornamental divider */
     .intro-ornament {
       display: block;
       color: var(--gold-dim);
@@ -115,7 +112,6 @@
       opacity: 0.6;
     }
 
-    /* Story paragraphs */
     .intro-story {
       max-width: 580px;
       margin: 0 auto;
@@ -134,13 +130,11 @@
       margin-bottom: 0;
     }
 
-    /* Lead paragraph — slightly larger */
     .intro-story p:first-child {
       font-size: clamp(1.05rem, 2.4vw, 1.22rem);
       color: var(--parchment);
     }
 
-    /* Final paragraph — pull quote treatment */
     .intro-story p.coda {
       font-size: clamp(1rem, 2.2vw, 1.18rem);
       color: var(--parchment-dim);
@@ -150,7 +144,6 @@
       margin-left: -1.5rem;
     }
 
-    /* CTA */
     .cta-wrap {
       margin-top: 4.5rem;
       display: flex;
@@ -221,7 +214,6 @@
       margin: 0 auto;
     }
 
-    /* Section header */
     .oracle-header {
       text-align: center;
       margin-bottom: 5rem;
@@ -245,46 +237,339 @@
       line-height: 1.25;
     }
 
-    /* Placeholder panels */
-    .oracle-mode-selector {
-      border: 1px solid var(--gold-dim);
-      border-radius: 2px;
-      padding: 3rem 2rem;
-      margin-bottom: 3rem;
-      text-align: center;
-      background: var(--ink-mid);
-      opacity: 0.5;
+    /* ------------------------------------------------------------------ */
+    /* CARD SCENE — 3D FLIP CONTAINER                                       */
+    /* ------------------------------------------------------------------ */
+    .card-scene {
+      perspective: 1200px;
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto 3rem;
+      /* Height driven by content, but set a min for face-down state */
     }
 
-    .oracle-card-display {
-      border: 1px solid var(--gold-dim);
-      border-radius: 2px;
-      padding: 5rem 2rem;
-      margin-bottom: 3rem;
-      text-align: center;
+    .card-flipper {
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+      /* Height matches tallest face; face-down is shorter so we let face-up drive it */
+    }
+
+    .card-flipper.is-flipped {
+      transform: rotateY(180deg);
+    }
+
+    /* Both faces share absolute stacking */
+    .card-face {
+      width: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 3px;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* CARD BACK — face-down state                                          */
+    /* ------------------------------------------------------------------ */
+    .card-back {
       background: var(--ink-mid);
+      border: 1px solid var(--gold-dim);
+      cursor: pointer;
+      padding: 3.5rem 2.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
       min-height: 260px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .card-back:hover {
+      border-color: var(--gold);
+      box-shadow: 0 0 28px rgba(201, 168, 76, 0.12), 0 0 60px rgba(201, 168, 76, 0.05);
+    }
+
+    /* Sigil — pure CSS star/geometric pattern */
+    .card-sigil {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      opacity: 0.18;
+    }
+
+    /* Outer ring */
+    .card-sigil::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border: 1px solid var(--gold);
+      border-radius: 50%;
+    }
+
+    /* Inner diamond */
+    .card-sigil::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 54px;
+      height: 54px;
+      border: 1px solid var(--gold);
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+
+    .sigil-inner {
+      position: absolute;
+      inset: 0;
       display: flex;
       align-items: center;
       justify-content: center;
+    }
+
+    .sigil-inner::before {
+      content: '';
+      width: 20px;
+      height: 20px;
+      border: 1px solid var(--gold);
+      border-radius: 50%;
+    }
+
+    /* Cross lines through sigil */
+    .sigil-lines {
+      position: absolute;
+      inset: 0;
+    }
+
+    .sigil-lines::before,
+    .sigil-lines::after {
+      content: '';
+      position: absolute;
+      background: var(--gold);
       opacity: 0.5;
     }
 
-    .oracle-prompt-area {
-      border: 1px solid var(--gold-dim);
-      border-radius: 2px;
-      padding: 3rem 2rem;
-      text-align: center;
-      background: var(--ink-mid);
-      opacity: 0.5;
+    .sigil-lines::before {
+      width: 1px;
+      height: 100%;
+      left: 50%;
+      transform: translateX(-50%);
     }
 
-    .placeholder-label {
+    .sigil-lines::after {
+      width: 100%;
+      height: 1px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    /* Corner ornaments on card back */
+    .card-back-corner {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-color: var(--gold-dim);
+      border-style: solid;
+      opacity: 0.35;
+    }
+
+    .card-back-corner.tl { top: 14px; left: 14px; border-width: 1px 0 0 1px; }
+    .card-back-corner.tr { top: 14px; right: 14px; border-width: 1px 1px 0 0; }
+    .card-back-corner.bl { bottom: 14px; left: 14px; border-width: 0 0 1px 1px; }
+    .card-back-corner.br { bottom: 14px; right: 14px; border-width: 0 1px 1px 0; }
+
+    .card-draw-label {
       font-family: var(--sans);
-      font-size: 0.7rem;
-      letter-spacing: 0.22em;
+      font-size: 0.68rem;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.6;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* CARD FRONT — face-up state                                           */
+    /* ------------------------------------------------------------------ */
+    .card-front {
+      background: var(--ink-mid);
+      border: 1px solid var(--gold);
+      box-shadow:
+        0 0 0 1px rgba(201, 168, 76, 0.08),
+        0 0 40px rgba(201, 168, 76, 0.1),
+        0 0 80px rgba(201, 168, 76, 0.04),
+        inset 0 0 60px rgba(10, 10, 15, 0.6);
+      padding: 2.5rem 2.5rem 2rem;
+      transform: rotateY(180deg);
+      /* When flipped, this face is visible */
+    }
+
+    /* Absolute positioning only needed when both faces stack */
+    .card-flipper .card-back {
+      /* Back is the reference face — not absolutely positioned */
+    }
+
+    .card-flipper .card-front {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    /* Phase label */
+    .card-phase {
+      font-family: var(--sans);
+      font-size: 0.6rem;
+      letter-spacing: 0.28em;
       text-transform: uppercase;
       color: var(--gold-dim);
+      opacity: 0.75;
+      margin-bottom: 0.6rem;
+    }
+
+    /* Axiom ID — top right corner */
+    .card-id {
+      position: absolute;
+      top: 1.6rem;
+      right: 1.8rem;
+      font-family: var(--sans);
+      font-size: 0.6rem;
+      letter-spacing: 0.18em;
+      color: var(--gold-dim);
+      opacity: 0.55;
+    }
+
+    /* Step/Law line */
+    .card-step {
+      font-family: var(--sans);
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      color: var(--parchment-dim);
+      margin-bottom: 1.8rem;
+      opacity: 0.7;
+    }
+
+    /* Thin divider */
+    .card-divider {
+      width: 40%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold-dim), transparent);
+      margin: 0 auto 2rem;
+      opacity: 0.5;
+    }
+
+    /* The axiom text — hero element */
+    .card-axiom {
+      font-family: var(--serif);
+      font-size: clamp(1.1rem, 2.4vw, 1.28rem);
+      line-height: 1.9;
+      color: var(--parchment);
+      text-align: center;
+      margin-bottom: 2rem;
+      letter-spacing: 0.01em;
+    }
+
+    /* Latin name below */
+    .card-latin {
+      font-family: var(--serif);
+      font-size: 0.82rem;
+      font-style: italic;
+      color: var(--gold-dim);
+      text-align: center;
+      letter-spacing: 0.06em;
+      opacity: 0.8;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* POST-DRAW ACTIONS                                                    */
+    /* ------------------------------------------------------------------ */
+    .card-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      max-width: 500px;
+      margin: 0 auto;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.4s ease 0.3s, transform 0.4s ease 0.3s;
+      pointer-events: none;
+    }
+
+    .card-actions.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .btn-draw-again {
+      background: transparent;
+      border: 1px solid var(--gold-dim);
+      color: var(--gold);
+      font-family: var(--serif);
+      font-size: 0.9rem;
+      font-style: italic;
+      letter-spacing: 0.08em;
+      padding: 0.7rem 2rem;
+      cursor: pointer;
+      transition: border-color 0.22s ease, color 0.22s ease, box-shadow 0.22s ease;
+      border-radius: 2px;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .btn-draw-again:hover {
+      border-color: var(--gold);
+      color: var(--gold-bright);
+      box-shadow: 0 0 16px rgba(201, 168, 76, 0.1);
+    }
+
+    .btn-take-it {
+      background: transparent;
+      border: none;
+      color: var(--parchment-dim);
+      font-family: var(--sans);
+      font-size: 0.68rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      cursor: pointer;
+      opacity: 0.5;
+      transition: opacity 0.22s ease, color 0.22s ease;
+      padding: 0.4rem 1rem;
+    }
+
+    .btn-take-it:hover {
+      opacity: 0.9;
+      color: var(--parchment);
+    }
+
+    .copy-confirm {
+      font-family: var(--sans);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      height: 1em;
+    }
+
+    .copy-confirm.is-visible {
+      opacity: 0.7;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* CARD DISPLAY WRAPPER                                                 */
+    /* ------------------------------------------------------------------ */
+    #card-display {
+      margin-bottom: 3rem;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* HIDDEN PLACEHOLDERS                                                  */
+    /* ------------------------------------------------------------------ */
+    #mode-selector,
+    #prompt-area {
+      display: none;
     }
 
     /* ------------------------------------------------------------------ */
@@ -301,10 +586,13 @@
         margin-left: 0;
       }
 
-      .oracle-mode-selector,
-      .oracle-card-display,
-      .oracle-prompt-area {
-        padding: 2rem 1.25rem;
+      .card-scene {
+        max-width: 100%;
+      }
+
+      .card-back,
+      .card-front {
+        padding: 2.5rem 1.5rem 2rem;
       }
     }
   </style>
@@ -370,26 +658,268 @@
 
       <div class="oracle-header">
         <p class="oracle-eyebrow">The Oracle</p>
-        <h2 class="oracle-title">Choose Your Mode of Inquiry</h2>
+        <h2 class="oracle-title">Draw an Axiom</h2>
       </div>
 
-      <!-- Mode selector placeholder -->
-      <div class="oracle-mode-selector" id="mode-selector">
-        <span class="placeholder-label">Mode Selector &mdash; Three Options</span>
+      <!-- Mode selector — hidden until Task 4 -->
+      <div id="mode-selector"></div>
+
+      <!-- Card display -->
+      <div id="card-display">
+        <div class="card-scene">
+          <div class="card-flipper" id="card-flipper">
+
+            <!-- Face down -->
+            <div class="card-back" id="card-back" role="button" tabindex="0" aria-label="Draw a card">
+              <div class="card-back-corner tl"></div>
+              <div class="card-back-corner tr"></div>
+              <div class="card-back-corner bl"></div>
+              <div class="card-back-corner br"></div>
+              <div class="card-sigil">
+                <div class="sigil-inner"></div>
+                <div class="sigil-lines"></div>
+              </div>
+              <span class="card-draw-label">Draw</span>
+            </div>
+
+            <!-- Face up — populated by JS -->
+            <div class="card-front" id="card-front" aria-hidden="true">
+              <span class="card-id" id="card-id"></span>
+              <p class="card-phase" id="card-phase"></p>
+              <p class="card-step" id="card-step"></p>
+              <div class="card-divider"></div>
+              <p class="card-axiom" id="card-axiom"></p>
+              <p class="card-latin" id="card-latin"></p>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Post-draw actions -->
+        <div class="card-actions" id="card-actions">
+          <button class="btn-draw-again" id="btn-draw-again">Draw Again</button>
+          <button class="btn-take-it" id="btn-take-it">Take This With You</button>
+          <span class="copy-confirm" id="copy-confirm">Copied to clipboard</span>
+        </div>
       </div>
 
-      <!-- Card display placeholder -->
-      <div class="oracle-card-display" id="card-display">
-        <span class="placeholder-label">Card Display Area</span>
-      </div>
-
-      <!-- Prompt generation placeholder -->
-      <div class="oracle-prompt-area" id="prompt-area">
-        <span class="placeholder-label">Prompt Generation Area</span>
-      </div>
+      <!-- Prompt area — hidden until Task 5 -->
+      <div id="prompt-area"></div>
 
     </div>
   </section>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // ----------------------------------------------------------------
+      // State
+      // ----------------------------------------------------------------
+      let axioms = [];
+      let currentAxiom = null;
+      let isFlipped = false;
+
+      // ----------------------------------------------------------------
+      // DOM refs
+      // ----------------------------------------------------------------
+      const flipper    = document.getElementById('card-flipper');
+      const cardBack   = document.getElementById('card-back');
+      const cardFront  = document.getElementById('card-front');
+      const actions    = document.getElementById('card-actions');
+      const btnAgain   = document.getElementById('btn-draw-again');
+      const btnTake    = document.getElementById('btn-take-it');
+      const copyConfirm = document.getElementById('copy-confirm');
+
+      const elId    = document.getElementById('card-id');
+      const elPhase = document.getElementById('card-phase');
+      const elStep  = document.getElementById('card-step');
+      const elAxiom = document.getElementById('card-axiom');
+      const elLatin = document.getElementById('card-latin');
+
+      // ----------------------------------------------------------------
+      // Load axioms
+      // ----------------------------------------------------------------
+      fetch('axioms.json')
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          axioms = data;
+        })
+        .catch(function (err) {
+          console.error('Failed to load axioms.json:', err);
+        });
+
+      // ----------------------------------------------------------------
+      // Helpers
+      // ----------------------------------------------------------------
+      function pickRandom() {
+        if (!axioms.length) return null;
+        return axioms[Math.floor(Math.random() * axioms.length)];
+      }
+
+      function buildStepLine(axiom) {
+        var type   = axiom.type;
+        var id     = axiom.id;
+        var step   = axiom.step;
+        var latin  = axiom.latin;
+        var parent = axiom.parent;
+
+        if (type === 'corollary') {
+          // "Step 8: Charge and Direct (Potestas)"
+          return parent + ': ' + step + (latin ? ' (' + latin + ')' : '');
+        }
+        if (type === 'core') {
+          // Could be a Step core or a Law core
+          if (id && id.startsWith('Law')) {
+            // Law core — no latin
+            return id + ': ' + step;
+          }
+          // Step core
+          return id + ': ' + step + (latin ? ' (' + latin + ')' : '');
+        }
+        if (type === 'sub-law') {
+          // "[parent]: [step name]"
+          return parent + ': ' + step;
+        }
+        // Fallback
+        return (parent || id) + ': ' + step;
+      }
+
+      function buildReflectionPrompt(axiom) {
+        var stepLine = buildStepLine(axiom);
+        // Determine source attribution
+        var attribution;
+        if (axiom.type === 'core' && axiom.id && axiom.id.startsWith('Law')) {
+          attribution = '— ' + axiom.id + ': ' + axiom.step;
+        } else if (axiom.type === 'sub-law') {
+          attribution = '— ' + axiom.parent + ': ' + axiom.step;
+        } else {
+          var name = axiom.parent || axiom.id;
+          var label = name + ': ' + axiom.step;
+          if (axiom.latin) {
+            attribution = '— ' + label + ' (' + axiom.latin + ')';
+          } else {
+            attribution = '— ' + label;
+          }
+        }
+
+        return 'Today\'s axiom:\n\n"' + axiom.text + '"\n' + attribution + '\n\nSit with this before you begin. What does it illuminate?';
+      }
+
+      // ----------------------------------------------------------------
+      // Sync card-front height so card-back matches on flip
+      // ----------------------------------------------------------------
+      function syncFlipperHeight() {
+        // After revealing, set explicit height on flipper = front height
+        // so the scene doesn't collapse to 0 (front is absolute)
+        var frontH = cardFront.offsetHeight;
+        flipper.style.height = frontH + 'px';
+      }
+
+      // ----------------------------------------------------------------
+      // Draw
+      // ----------------------------------------------------------------
+      function draw() {
+        if (isFlipped) return;
+        if (!axioms.length) {
+          console.warn('Axioms not loaded yet.');
+          return;
+        }
+
+        currentAxiom = pickRandom();
+
+        // Populate front face
+        elId.textContent    = currentAxiom.id;
+        elPhase.textContent = currentAxiom.phase;
+        elStep.textContent  = buildStepLine(currentAxiom);
+        elAxiom.textContent = currentAxiom.text;
+
+        if (currentAxiom.latin && !currentAxiom.id.startsWith('Law')) {
+          elLatin.textContent = currentAxiom.latin;
+          elLatin.style.display = '';
+        } else {
+          elLatin.textContent = '';
+          elLatin.style.display = 'none';
+        }
+
+        // Flip
+        isFlipped = true;
+        flipper.classList.add('is-flipped');
+        cardBack.setAttribute('aria-hidden', 'true');
+        cardFront.setAttribute('aria-hidden', 'false');
+
+        // After transition, sync height and show actions
+        setTimeout(function () {
+          syncFlipperHeight();
+          actions.classList.add('is-visible');
+        }, 580);
+      }
+
+      // ----------------------------------------------------------------
+      // Reset
+      // ----------------------------------------------------------------
+      function reset() {
+        actions.classList.remove('is-visible');
+        copyConfirm.classList.remove('is-visible');
+
+        // Restore natural height for face-down state
+        flipper.style.height = '';
+
+        isFlipped = false;
+        flipper.classList.remove('is-flipped');
+        cardBack.setAttribute('aria-hidden', 'false');
+        cardFront.setAttribute('aria-hidden', 'true');
+        currentAxiom = null;
+      }
+
+      // ----------------------------------------------------------------
+      // Take This With You
+      // ----------------------------------------------------------------
+      function takeWithYou() {
+        if (!currentAxiom) return;
+        var prompt = buildReflectionPrompt(currentAxiom);
+
+        // Attempt clipboard copy; fall back to console
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(prompt)
+            .then(function () {
+              console.log('Copied to clipboard:\n\n' + prompt);
+              showCopyConfirm();
+            })
+            .catch(function () {
+              console.log('Reflection prompt:\n\n' + prompt);
+              showCopyConfirm();
+            });
+        } else {
+          console.log('Reflection prompt:\n\n' + prompt);
+          showCopyConfirm();
+        }
+      }
+
+      function showCopyConfirm() {
+        copyConfirm.classList.add('is-visible');
+        setTimeout(function () {
+          copyConfirm.classList.remove('is-visible');
+        }, 2400);
+      }
+
+      // ----------------------------------------------------------------
+      // Event listeners
+      // ----------------------------------------------------------------
+      cardBack.addEventListener('click', draw);
+
+      cardBack.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          draw();
+        }
+      });
+
+      btnAgain.addEventListener('click', reset);
+      btnTake.addEventListener('click', takeWithYou);
+
+    })();
+  </script>
 
 </body>
 </html>
