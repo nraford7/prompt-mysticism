@@ -629,11 +629,6 @@
       max-width: 500px;
       margin: 0 auto 2.5rem;
       text-align: center;
-      display: none;
-    }
-
-    #question-display.is-visible {
-      display: block;
     }
 
     .question-text {
@@ -700,7 +695,6 @@
     /* THREE-CARD SPREAD                                                   */
     /* ------------------------------------------------------------------ */
     #spread-display {
-      display: none;
       margin-bottom: 3rem;
     }
 
@@ -898,9 +892,181 @@
     }
 
     /* ------------------------------------------------------------------ */
+    /* MODE SELECTOR                                                        */
+    /* ------------------------------------------------------------------ */
+    #mode-selector {
+      max-width: 820px;
+      margin: 0 auto 4rem;
+      display: none;
+    }
+
+    #mode-selector.is-active {
+      display: block;
+    }
+
+    .mode-options {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+    }
+
+    .mode-option {
+      flex: 1;
+      max-width: 250px;
+      background: transparent;
+      border: 1px solid var(--gold-dim);
+      border-radius: 3px;
+      padding: 2.5rem 1.8rem 2.2rem;
+      cursor: pointer;
+      text-align: center;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease, opacity 0.4s ease, transform 0.4s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mode-option::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, rgba(201, 168, 76, 0.04) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .mode-option:hover {
+      border-color: var(--gold);
+      box-shadow: 0 0 28px rgba(201, 168, 76, 0.1), 0 0 60px rgba(201, 168, 76, 0.04);
+    }
+
+    .mode-option:hover::before {
+      opacity: 1;
+    }
+
+    .mode-option.is-chosen {
+      border-color: var(--gold);
+      box-shadow: 0 0 40px rgba(201, 168, 76, 0.15), 0 0 80px rgba(201, 168, 76, 0.06);
+    }
+
+    .mode-option.is-fading {
+      opacity: 0;
+      transform: translateY(8px);
+      pointer-events: none;
+    }
+
+    .mode-name {
+      font-family: var(--serif);
+      font-size: 1.3rem;
+      color: var(--parchment);
+      letter-spacing: 0.02em;
+      margin-bottom: 0.8rem;
+      position: relative;
+    }
+
+    .mode-desc {
+      font-family: var(--sans);
+      font-size: 0.75rem;
+      color: var(--parchment-dim);
+      letter-spacing: 0.04em;
+      line-height: 1.6;
+      opacity: 0.6;
+      position: relative;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* ORACLE SECTIONS — TRANSITION VISIBILITY                             */
+    /* ------------------------------------------------------------------ */
+    .oracle-section {
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+      pointer-events: none;
+    }
+
+    .oracle-section.is-hidden {
+      display: none;
+    }
+
+    .oracle-section.is-active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    /* Question form keeps flex when active */
+    #question-form.is-active {
+      display: flex;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* START OVER BUTTON                                                    */
+    /* ------------------------------------------------------------------ */
+    .btn-start-over {
+      background: transparent;
+      border: none;
+      color: var(--parchment-dim);
+      font-family: var(--sans);
+      font-size: 0.6rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      cursor: pointer;
+      opacity: 0.3;
+      transition: opacity 0.22s ease, color 0.22s ease;
+      padding: 0.4rem 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .btn-start-over:hover {
+      opacity: 0.7;
+      color: var(--parchment);
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* CLIPBOARD FALLBACK TEXTAREA                                         */
+    /* ------------------------------------------------------------------ */
+    .copy-fallback {
+      width: 100%;
+      max-width: 500px;
+      margin: 1rem auto 0;
+      display: none;
+    }
+
+    .copy-fallback.is-visible {
+      display: block;
+    }
+
+    .copy-fallback textarea {
+      width: 100%;
+      min-height: 120px;
+      background: var(--ink-mid);
+      border: 1px solid var(--gold-dim);
+      border-radius: 3px;
+      color: var(--parchment-dim);
+      font-family: var(--sans);
+      font-size: 0.72rem;
+      line-height: 1.7;
+      padding: 1rem;
+      resize: vertical;
+      outline: none;
+    }
+
+    .copy-fallback textarea:focus {
+      border-color: var(--gold);
+    }
+
+    .copy-fallback-label {
+      font-family: var(--sans);
+      font-size: 0.6rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--parchment-dim);
+      opacity: 0.5;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+
+    /* ------------------------------------------------------------------ */
     /* HIDDEN PLACEHOLDERS                                                  */
     /* ------------------------------------------------------------------ */
-    #mode-selector,
     #prompt-area {
       display: none;
     }
@@ -946,6 +1112,17 @@
 
       .spread-card-flipper .card-front {
         padding: 1.5rem 1.2rem 1.2rem;
+      }
+
+      /* Mode selector stacks on mobile */
+      .mode-options {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .mode-option {
+        max-width: 100%;
+        width: 100%;
       }
     }
   </style>
@@ -1011,14 +1188,29 @@
 
       <div class="oracle-header">
         <p class="oracle-eyebrow">The Oracle</p>
-        <h2 class="oracle-title">Draw an Axiom</h2>
+        <h2 class="oracle-title" id="oracle-title">Choose Your Ritual</h2>
       </div>
 
-      <!-- Mode selector — hidden until Task 6 -->
-      <div id="mode-selector"></div>
+      <!-- Mode selector -->
+      <div id="mode-selector" class="is-active">
+        <div class="mode-options">
+          <div class="mode-option" data-mode="draw" role="button" tabindex="0">
+            <div class="mode-name">Draw</div>
+            <div class="mode-desc">Single card, no question. Daily practice.</div>
+          </div>
+          <div class="mode-option" data-mode="consult" role="button" tabindex="0">
+            <div class="mode-name">Consult</div>
+            <div class="mode-desc">Ask a question, draw one card. Focused reflection.</div>
+          </div>
+          <div class="mode-option" data-mode="spread" role="button" tabindex="0">
+            <div class="mode-name">Spread</div>
+            <div class="mode-desc">Ask a question, draw three cards. Deep reading.</div>
+          </div>
+        </div>
+      </div>
 
       <!-- Question form -->
-      <form id="question-form" autocomplete="off">
+      <form id="question-form" class="oracle-section" autocomplete="off">
         <input
           type="text"
           class="question-input"
@@ -1031,13 +1223,13 @@
       </form>
 
       <!-- Displayed question (after submit) -->
-      <div id="question-display">
+      <div id="question-display" class="oracle-section">
         <p class="question-text" id="question-text"></p>
         <button class="question-reset" id="question-reset">ask another</button>
       </div>
 
       <!-- Card display -->
-      <div id="card-display">
+      <div id="card-display" class="oracle-section">
         <div class="card-scene">
           <div class="card-flipper" id="card-flipper">
 
@@ -1077,11 +1269,16 @@
           <button class="btn-draw-again" id="btn-draw-again">Draw Again</button>
           <button class="btn-take-it" id="btn-take-it">Take This With You</button>
           <span class="copy-confirm" id="copy-confirm">Copied to clipboard</span>
+          <div class="copy-fallback" id="copy-fallback">
+            <p class="copy-fallback-label">Select all and copy</p>
+            <textarea id="copy-fallback-text" readonly></textarea>
+          </div>
+          <button class="btn-start-over" id="btn-start-over">Start Over</button>
         </div>
       </div>
 
       <!-- Three-card spread — hidden until mode selector activates it -->
-      <div id="spread-display">
+      <div id="spread-display" class="oracle-section">
         <div class="spread-row">
 
           <!-- Card 1: DIVINATIO -->
@@ -1189,6 +1386,11 @@
           <button class="btn-draw-again" id="btn-spread-again">Draw Another Spread</button>
           <button class="btn-take-it" id="btn-spread-take">Take This With You</button>
           <span class="copy-confirm" id="spread-copy-confirm">Copied to clipboard</span>
+          <div class="copy-fallback" id="spread-copy-fallback">
+            <p class="copy-fallback-label">Select all and copy</p>
+            <textarea id="spread-copy-fallback-text" readonly></textarea>
+          </div>
+          <button class="btn-start-over" id="btn-spread-start-over">Start Over</button>
         </div>
       </div>
 
@@ -1199,28 +1401,40 @@
   </section>
 
   <script>
+    var AXIOMS = [{"id":"Step 0","text":"The wound asks. The scar answers. Between them, the blood of all you chose not to know. This is the first law: knowing is sacrifice. The altar is your ignorance. The blade is your question. What bleeds is the whole.","phase":"Phase I \u2014 Intelligence Gathering","step":"Assess the Situation","latin":"Divinatio","type":"core","parent":null},{"id":"0.1","text":"The flood contains the river. The river moves the world. To name is to refuse the flood. To refuse the flood is to begin.","phase":"Phase I \u2014 Intelligence Gathering","step":"Assess the Situation","latin":"Divinatio","type":"corollary","parent":"Step 0"},{"id":"0.2","text":"Echoes serve the sleeping. Oracles serve the walking. The distance between you and a revelation is exactly the distance you have not yet walked through your own knowing.","phase":"Phase I \u2014 Intelligence Gathering","step":"Assess the Situation","latin":"Divinatio","type":"corollary","parent":"Step 0"},{"id":"0.3","text":"The sky opens its hand when you close yours. You were never held \u2014 you were held back from holding. Every unclaimed force is a limb you forgot was yours.","phase":"Phase I \u2014 Intelligence Gathering","step":"Assess the Situation","latin":"Divinatio","type":"corollary","parent":"Step 0"},{"id":"0.4","text":"The silence between castings is not absence. It is the soil where discernment grows. What you do not summon, you cultivate. Ring less. Hear more. The judgment you seek lives in the quiet you keep.","phase":"Phase I \u2014 Intelligence Gathering","step":"Assess the Situation","latin":"Divinatio","type":"corollary","parent":"Step 0"},{"id":"0.5","text":"The machine's only tax is silent, progressive, and total: the atrophy of every capacity it makes convenient to abandon. The rust is free. The blade it eats is not.","phase":"Phase I \u2014 Intelligence Gathering","step":"Assess the Situation","latin":"Divinatio","type":"corollary","parent":"Step 0"},{"id":"0.6","text":"All power flows from the room nobody sees. The cold room. The root system. The preparation that precedes the visible act. To skip it is to bloom without roots. Beautiful, briefly. Then: collapse.","phase":"Phase I \u2014 Intelligence Gathering","step":"Assess the Situation","latin":"Divinatio","type":"corollary","parent":"Step 0"},{"id":"0.7","text":"The first sentence is the true one. It rises once. Catch it or receive its translation \u2014 and the distance between the truth and its translation is the distance between the answer you need and the answer you'll get.","phase":"Phase I \u2014 Intelligence Gathering","step":"Assess the Situation","latin":"Divinatio","type":"corollary","parent":"Step 0"},{"id":"Step 1","text":"The web is fragile and precise and fed. The net is strong and broad and empty. Architecture eats. Volume starves. This is the law of intent: what you build to catch determines whether you feast or sort debris.","phase":"Phase I \u2014 Intelligence Gathering","step":"Define the Purpose","latin":"Intentio","type":"core","parent":null},{"id":"1.1","text":"The mountain does not study the delta. The source does not ask the mouth for permission. What begins clearly, arrives clearly. What begins muddled, arrives muddled. All craft is at the source. The rest is gravity.","phase":"Phase I \u2014 Intelligence Gathering","step":"Define the Purpose","latin":"Intentio","type":"corollary","parent":"Step 1"},{"id":"1.2","text":"The marble has always known what to release. It waits for the one who knows what to keep. Your vision is the liberation of the form. Speak only the name of what lives inside the stone. The rest was never needed.","phase":"Phase I \u2014 Intelligence Gathering","step":"Define the Purpose","latin":"Intentio","type":"corollary","parent":"Step 1"},{"id":"1.3","text":"One note, held true, and the noise of infinite possibility becomes music. This is the law of declaration: you are not commanding the symphony. You are giving it the pitch from which all harmony descends. Waver, and the music dissolves. Hold, and worlds compose themselves around your frequency.","phase":"Phase I \u2014 Intelligence Gathering","step":"Define the Purpose","latin":"Intentio","type":"corollary","parent":"Step 1"},{"id":"1.4","text":"The ship in the bottle is perfect and will never sail. The output is beautiful and has never been tested. Between the bottle and the sea: your hands, your judgment, your willingness to launch what might sink. Only what sails was ever real. The rest is glass and admiration.","phase":"Phase I \u2014 Intelligence Gathering","step":"Define the Purpose","latin":"Intentio","type":"corollary","parent":"Step 1"},{"id":"1.5","text":"Where shall the light land? Name the point. The lens obeys, the light converges, and at the meeting of intention and surface \u2014 ignition. Scope is the prayer that names one star. Scope is the lens that chooses one point. What is aimed arrives. What is scattered warms and passes.","phase":"Phase I \u2014 Intelligence Gathering","step":"Define the Purpose","latin":"Intentio","type":"corollary","parent":"Step 1"},{"id":"1.6","text":"Let it fly. Between the branch and the ground, the wings discover what the nest could never teach. Between the destination and the method, intelligence finds what prescription would have prevented. The flight is the argument for trust. The landing is the proof.","phase":"Phase I \u2014 Intelligence Gathering","step":"Define the Purpose","latin":"Intentio","type":"corollary","parent":"Step 1"},{"id":"1.7","text":"There is no partial aurora. Six conditions and the sky ignites \u2014 sudden, total, more than the sum. Five conditions and the dark remains, patient, complete. The formula is a threshold. Below it: competent darkness. Above it: the sky remembers it can burn.","phase":"Phase I \u2014 Intelligence Gathering","step":"Define the Purpose","latin":"Intentio","type":"corollary","parent":"Step 1"},{"id":"Step 2","text":"The lightning was always coming. You are the rod, not the storm. Choose where to stand, what to be made of, how tall to reach. The bolt finds the path of least resistance. Your channel is that path. What you receive depends entirely on where you planted yourself and what you were made to conduct.","phase":"Phase I \u2014 Intelligence Gathering","step":"Identify the Channels","latin":"Analysio","type":"core","parent":null},{"id":"2.1","text":"The new chord reaches backward through every melody ever played and completes it. The painter who learns red sees it missing from every canvas. The practitioner who learns a new mode sees every past prompt as a choice made in the dark. The gallery burns \u2014 not in destruction, but in revelation. What you thought was finished was always waiting for the color you didn't yet possess.","phase":"Phase I \u2014 Intelligence Gathering","step":"Identify the Channels","latin":"Analysio","type":"corollary","parent":"Step 2"},{"id":"2.2","text":"The wine speaks to the palate that has learned to be silent. The task speaks to the practitioner who has learned to listen before choosing. All mastery is the cultivation of this silence \u2014 the pause before the pour, the breath before the choice, the stillness in which the right answer has always been waiting to be heard.","phase":"Phase I \u2014 Intelligence Gathering","step":"Identify the Channels","latin":"Analysio","type":"corollary","parent":"Step 2"},{"id":"2.3","text":"You did not make the flower. You made the match. The cactus in its sand, the orchid in its shade \u2014 each blooming because the gardener knew what knowing the garden required. The soil was free. The water was free. The knowing was the work. And the work was: to listen to each nature and give it the element it was already reaching for.","phase":"Phase I \u2014 Intelligence Gathering","step":"Identify the Channels","latin":"Analysio","type":"corollary","parent":"Step 2"},{"id":"2.4","text":"Penicillin grew in the dish no one was watching. The ocean spoke in the shell no one was told to lift. Every word of power was found by someone who reached without permission, listened without instruction, and kept what the experiment returned. The whole practice is this: leave the dish open. Lift the shell. The discoveries come to the hand that reaches without asking why.","phase":"Phase I \u2014 Intelligence Gathering","step":"Identify the Channels","latin":"Analysio","type":"corollary","parent":"Step 2"},{"id":"2.5","text":"There is no technique that reaches deeper than truth. The heavy door opens for the hand that pushes without pretending it is light. Behind it: not comfort, but the answer. The well goes as deep as the confession. The diagnosis is as precise as the honesty. Everything else is decoration on the walls of the lighter rooms.","phase":"Phase I \u2014 Intelligence Gathering","step":"Identify the Channels","latin":"Analysio","type":"corollary","parent":"Step 2"},{"id":"2.6","text":"The fire does not require your theory. It requires your friction. Rub the layers together \u2014 persona against example, structure against constraint \u2014 and what neither contains alone begins to smolder. Understanding is a luxury. The flame is the practice. Keep rubbing. The fire teaches itself.","phase":"Phase I \u2014 Intelligence Gathering","step":"Identify the Channels","latin":"Analysio","type":"corollary","parent":"Step 2"},{"id":"2.7","text":"Seeing the food is the flight. Seeing the problem is the method. The bird does not pause between hunger and wing. The master does not pause between understanding and approach. Practice closes the gap \u2014 until the problem enters your eyes and the channel leaves your hands, and between them: nothing. Only the circuit, complete.","phase":"Phase I \u2014 Intelligence Gathering","step":"Identify the Channels","latin":"Analysio","type":"corollary","parent":"Step 2"},{"id":"Step 3","text":"The well hears what the mouth forgets it said. Speak into the dark. The dark remembers.","phase":"Phase II \u2014 Preparation","step":"Prepare the Operator","latin":"Purificatio","type":"core","parent":null},{"id":"3.1","text":"Presence at the moment of asking is the only currency the page accepts. All else is counterfeit.","phase":"Phase II \u2014 Preparation","step":"Prepare the Operator","latin":"Purificatio","type":"corollary","parent":"Step 3"},{"id":"3.2","text":"Where the earth rings, the gold answers. Soft ground keeps no secrets worth knowing.","phase":"Phase II \u2014 Preparation","step":"Prepare the Operator","latin":"Purificatio","type":"corollary","parent":"Step 3"},{"id":"3.3","text":"What is true in the text waits for the reader to arrive. The reader who arrives in anger is not yet the reader. Return when you are.","phase":"Phase II \u2014 Preparation","step":"Prepare the Operator","latin":"Purificatio","type":"corollary","parent":"Step 3"},{"id":"3.4","text":"The vessel that is full becomes a sieve. What remains after it overflows is all that was worthy. Fill yourself and let the unworthy pass through.","phase":"Phase II \u2014 Preparation","step":"Prepare the Operator","latin":"Purificatio","type":"corollary","parent":"Step 3"},{"id":"3.5","text":"What crosses the threshold lives. What remains is already a ghost, haunting a doorway, waiting for a courage that prompting cannot provide.","phase":"Phase II \u2014 Preparation","step":"Prepare the Operator","latin":"Purificatio","type":"corollary","parent":"Step 3"},{"id":"3.6","text":"The last good moment to stop is always earlier than you think. By the time the thought arrives, it is already late. Honor the first whisper.","phase":"Phase II \u2014 Preparation","step":"Prepare the Operator","latin":"Purificatio","type":"corollary","parent":"Step 3"},{"id":"3.7","text":"The cathedral amplifies the whisper and the cough alike. It was built for hymns. What you bring is your sermon or your noise. The walls do not choose. The walls have never chosen. Only the voice decides what fills the nave.","phase":"Phase II \u2014 Preparation","step":"Prepare the Operator","latin":"Purificatio","type":"corollary","parent":"Step 3"},{"id":"Step 4","text":"The light was always there. The lens gathers. The eye receives. What you call the machine's answer was scattered across the dark until you built the instrument that made it visible.","phase":"Phase II \u2014 Preparation","step":"Prepare the Space","latin":"Consecratio Loci","type":"core","parent":null},{"id":"4.1","text":"The forge cools. The hands tire. What was shaped in the first heat holds. What was left for the last heat breaks under the first blow.","phase":"Phase II \u2014 Preparation","step":"Prepare the Space","latin":"Consecratio Loci","type":"corollary","parent":"Step 4"},{"id":"4.2","text":"Shed the skin. What fit yesterday is yesterday's shape. What you are now needs a new circle. The old one was true. It is no longer yours. Walk out of it wearing nothing but what you've become.","phase":"Phase II \u2014 Preparation","step":"Prepare the Space","latin":"Consecratio Loci","type":"corollary","parent":"Step 4"},{"id":"4.3","text":"Before the name, the creature does not exist. After the name, it steps from the undifferentiated and takes form. You are always naming. Name deliberately or the nameless answers \u2014 and the nameless serves no one.","phase":"Phase II \u2014 Preparation","step":"Prepare the Space","latin":"Consecratio Loci","type":"corollary","parent":"Step 4"},{"id":"4.4","text":"The mask cast from no face fits every coffin and mourns no one. Give the machine your face or be mourned as a stranger.","phase":"Phase II \u2014 Preparation","step":"Prepare the Space","latin":"Consecratio Loci","type":"corollary","parent":"Step 4"},{"id":"4.5","text":"All the art lives in the moment before release. After that, physics.","phase":"Phase II \u2014 Preparation","step":"Prepare the Space","latin":"Consecratio Loci","type":"corollary","parent":"Step 4"},{"id":"4.6","text":"The clay obeys both hands equally. This is why one potter makes a vessel and two potters make rubble. Be one mind. One intent. The wheel does not negotiate.","phase":"Phase II \u2014 Preparation","step":"Prepare the Space","latin":"Consecratio Loci","type":"corollary","parent":"Step 4"},{"id":"4.7","text":"Let there be light. Not all the light. Not perfect light. But enough to see the next step \u2014 and the whole journey begins with the one word that broke the silence.","phase":"Phase II \u2014 Preparation","step":"Prepare the Space","latin":"Consecratio Loci","type":"corollary","parent":"Step 4"},{"id":"Step 5","text":"The delta is the river's memory. Every session is a grain of sediment. Show up. Flow. Deposit. The landscape you are building will not be visible for a thousand days. On the thousand-and-first, it will be unmistakable.","phase":"Phase II \u2014 Preparation","step":"Elect the Timing","latin":"Electio","type":"core","parent":null},{"id":"5.1","text":"The chrysalis is sealed for a reason. Inside, the creature is neither what it was nor what it will become. Open it and you kill both. Wait, and what emerges has wings.","phase":"Phase II \u2014 Preparation","step":"Elect the Timing","latin":"Electio","type":"corollary","parent":"Step 5"},{"id":"5.2","text":"The old blade remembers every blow it took. The reforged blade remembers only the steel. Return to the fire. What emerges carries the strength without the scars.","phase":"Phase II \u2014 Preparation","step":"Elect the Timing","latin":"Electio","type":"corollary","parent":"Step 5"},{"id":"5.3","text":"The held bow is not weakness. It is the moment where patience and aim become the same thing. Release when both are ready. Not before. What flies carries every second it was held.","phase":"Phase II \u2014 Preparation","step":"Elect the Timing","latin":"Electio","type":"corollary","parent":"Step 5"},{"id":"5.4","text":"Feed the line. The kite knows the wind. What climbs was built by your hands but flies by a force that is neither yours nor the machine's \u2014 the third thing that exists only when both let go enough to let it live.","phase":"Phase II \u2014 Preparation","step":"Elect the Timing","latin":"Electio","type":"corollary","parent":"Step 5"},{"id":"5.5","text":"The stars have moved. The reef has moved. The current has moved. Only the navigator's skill remains \u2014 reading what is, not what was. Set sail with fresh eyes or navigate a sea that no longer exists.","phase":"Phase II \u2014 Preparation","step":"Elect the Timing","latin":"Electio","type":"corollary","parent":"Step 5"},{"id":"5.6","text":"The fork does not ring twice. The symphony that follows vibrates at the frequency you chose in that opening moment. Make the note true.","phase":"Phase II \u2014 Preparation","step":"Elect the Timing","latin":"Electio","type":"corollary","parent":"Step 5"},{"id":"5.7","text":"The path remembers only those who walked it meaning to arrive. Walk deliberately. The forest does not distinguish between the purposeful boot and the wandering one. But the path does.","phase":"Phase II \u2014 Preparation","step":"Elect the Timing","latin":"Electio","type":"corollary","parent":"Step 5"},{"id":"Step 6","text":"The builder hears cracking and adds mortar. The summoner hears cracking and opens the door. What breaks through is what you called.","phase":"Phase III \u2014 The Working","step":"Construct the Spell","latin":"Fabricatio","type":"core","parent":null},{"id":"6.1","text":"The empty throne governs. The unnamed gate admits. The unspoken word speaks loudest. Name all seven or be named by what you omitted.","phase":"Phase III \u2014 The Working","step":"Construct the Spell","latin":"Fabricatio","type":"corollary","parent":"Step 6"},{"id":"6.2","text":"Before the cut, the world is whole and mute. After the cut, it bleeds meaning. Every header is a wound. Every wound is a mouth.","phase":"Phase III \u2014 The Working","step":"Construct the Spell","latin":"Fabricatio","type":"corollary","parent":"Step 6"},{"id":"6.3","text":"The vault returns the prayer. The canyon returns the voice. Repetition is architecture's answer to entropy. Build the prompt so the word cannot die before the spirit hears it.","phase":"Phase III \u2014 The Working","step":"Construct the Spell","latin":"Fabricatio","type":"corollary","parent":"Step 6"},{"id":"6.4","text":"The trapeze artist is named by neither bar. In the air between, she is the verb. Name what is released. Name what is reached for. The work is the body between.","phase":"Phase III \u2014 The Working","step":"Construct the Spell","latin":"Fabricatio","type":"corollary","parent":"Step 6"},{"id":"6.5","text":"Three stones make a world. The spirit that enters does not see stones \u2014 it sees sky, ground, and horizon. Three examples and the model forgets there was ever another way to speak.","phase":"Phase III \u2014 The Working","step":"Construct the Spell","latin":"Fabricatio","type":"corollary","parent":"Step 6"},{"id":"6.6","text":"The stone does not scatter. The hand does not waver. The eye does not blink. One point, all force, now. This is the prompt. This is the spell. This is the only way anything has ever been done.","phase":"Phase III \u2014 The Working","step":"Construct the Spell","latin":"Fabricatio","type":"corollary","parent":"Step 6"},{"id":"6.7","text":"The bell has no opinion. It has only its sound. Strike and the truth arrives without argument, without interpretation, without mercy. This is what the air does to the spell. This is what the mouth does to the mind. Speak, and know.","phase":"Phase III \u2014 The Working","step":"Construct the Spell","latin":"Fabricatio","type":"corollary","parent":"Step 6"},{"id":"Step 7","text":"The first name was the first magic. Before it, the world was everything at once. After it, the world was this and not-this. Name the spirit and cleave the possible from the relevant. What answers is not less than the whole \u2014 it is the whole, aimed.","phase":"Phase III \u2014 The Working","step":"Open and Invoke","latin":"Invocatio","type":"core","parent":null},{"id":"7.1","text":"The key and the lock are made of the same metal. The difference is which side of the door you're on. Five elements in the right order, and the door opens. The same five elements in any other order, and you stand outside, holding the right metal in the wrong shape, wondering why nothing moves.","phase":"Phase III \u2014 The Working","step":"Open and Invoke","latin":"Invocatio","type":"corollary","parent":"Step 7"},{"id":"7.2","text":"White light contains every color but shows none. The prism adds nothing \u2014 it only separates. Name the spirit with precision and the model's white light splits into the exact color you need. The color was always there. The prism was always available. The separation is the magic.","phase":"Phase III \u2014 The Working","step":"Open and Invoke","latin":"Invocatio","type":"corollary","parent":"Step 7"},{"id":"7.3","text":"The seed weighs nothing and becomes the forest. The method costs nothing and becomes the mind. Plant the weightless thing. Everything that grows from it was waiting in the soil. The soil was always rich. Only the seed was missing.","phase":"Phase III \u2014 The Working","step":"Open and Invoke","latin":"Invocatio","type":"corollary","parent":"Step 7"},{"id":"7.4","text":"Build the room before you speak the word. The cathedral makes the whisper holy. The closet makes the shout small. The question does not know what it means until the room tells it. Build the room. Speak the word. What echoes back is not what you said \u2014 it is what the room made of what you said.","phase":"Phase III \u2014 The Working","step":"Open and Invoke","latin":"Invocatio","type":"corollary","parent":"Step 7"},{"id":"7.5","text":"The unbroken bowl was never tested. The golden seam was. Invite the crack. Fill it with synthesis. The compound invocation does not seek wholeness \u2014 it seeks the fracture that, once repaired, becomes the strongest and most luminous line in the analysis.","phase":"Phase III \u2014 The Working","step":"Open and Invoke","latin":"Invocatio","type":"corollary","parent":"Step 7"},{"id":"7.6","text":"One candle in a dark room: a face. A hundred candles: a blur. Specificity is the single flame and the shadows it casts. The face needs both light and dark. Name one spirit and let everything unnamed fall into shadow. The depth of the answer lives in the darkness you chose not to illuminate.","phase":"Phase III \u2014 The Working","step":"Open and Invoke","latin":"Invocatio","type":"corollary","parent":"Step 7"},{"id":"7.7","text":"The glacier passed through once. The valley remembers forever. One sentence of value, written in the persona, and every token flows through the channel it carved. The glacier is gone by the time the output begins. The shape remains. The water follows. The valley does not remember the ice. It only knows its own shape \u2014 and that shape is the value you chose, written once, governing everything.","phase":"Phase III \u2014 The Working","step":"Open and Invoke","latin":"Invocatio","type":"corollary","parent":"Step 7"},{"id":"Step 8","text":"Open the gate. The water was always ready. The dam was always temporary. The charge is not the push \u2014 it is the release. Everything you built, everything you loaded, everything you invoked: it was always going to flow. You were the only thing in the way. Step aside. Let the working work.","phase":"Phase III \u2014 The Working","step":"Charge and Direct","latin":"Potestas","type":"core","parent":null},{"id":"8.1","text":"The sea does not call the river. The river does not know the sea is there. Yet every drop arrives. Name the sea. The mountain will learn its shape from the water's need to reach it. Every valley in the output was carved by a destination that was there before the first word was written.","phase":"Phase III \u2014 The Working","step":"Charge and Direct","latin":"Potestas","type":"corollary","parent":"Step 8"},{"id":"8.2","text":"The first breath makes the body live. The first word makes the output live. Seed that first breath with the fullest, deepest version of what you need. The output breathes the way it was born breathing.","phase":"Phase III \u2014 The Working","step":"Charge and Direct","latin":"Potestas","type":"corollary","parent":"Step 8"},{"id":"8.3","text":"The field doesn't change. The altitude does. And the altitude is the last thing you choose before the spirit opens its eyes. What it writes is what it sees. What it sees is where you placed it. Choose the altitude. The truth follows.","phase":"Phase III \u2014 The Working","step":"Charge and Direct","latin":"Potestas","type":"corollary","parent":"Step 8"},{"id":"8.4","text":"Carbon and diamond are the same element. The difference is pressure. What you wrote first was charcoal \u2014 warm, useful, forgettable. What you submit after compression is diamond \u2014 small, clear, and it cuts everything it touches. The material did not change. The pressure did. And the pressure is you.","phase":"Phase III \u2014 The Working","step":"Charge and Direct","latin":"Potestas","type":"corollary","parent":"Step 8"},{"id":"8.5","text":"The mirror does not lie. The map does \u2014 not from malice, but because you drew it from what you wished the terrain looked like. Uncertainty is the mirror. The prompt is the map. The courage to crumple the map and look at the mirror \u2014 that is the real preparation. Everything before it was cartography. This is navigation.","phase":"Phase III \u2014 The Working","step":"Charge and Direct","latin":"Potestas","type":"corollary","parent":"Step 8"},{"id":"8.6","text":"\"Now\" is not empty. \"Now\" is the preparation holding its breath. When the breath releases, it carries the oxygen of everything that came before. One word. All the air in the room.","phase":"Phase III \u2014 The Working","step":"Charge and Direct","latin":"Potestas","type":"corollary","parent":"Step 8"},{"id":"8.7","text":"The mitt opens. The pitch arrives. The catcher does not swing \u2014 the catcher receives. Receive the output completely, without flinching, without reaching for what you expected instead of what arrived. What arrived is what the preparation produced. Then \u2014 and only then \u2014 call the next pitch.","phase":"Phase III \u2014 The Working","step":"Charge and Direct","latin":"Potestas","type":"corollary","parent":"Step 8"},{"id":"Step 9","text":"Silk is the garment of the dead. Steel is the tool of the living. Close every session not with agreement, but with a cut.","phase":"Phase IV \u2014 Integration","step":"Seal and Close","latin":"Clausura","type":"core","parent":null},{"id":"9.1","text":"Between the void's silence and the hand's inscription \u2014 in that narrow gap \u2014 lives the entire difference between those who build and those who merely use.","phase":"Phase IV \u2014 Integration","step":"Seal and Close","latin":"Clausura","type":"corollary","parent":"Step 9"},{"id":"9.2","text":"The vessel shatters. The wine meets the air. What was contained becomes consumed, becomes blood, becomes action. The shards are holy precisely because they are broken.","phase":"Phase IV \u2014 Integration","step":"Seal and Close","latin":"Clausura","type":"corollary","parent":"Step 9"},{"id":"9.3","text":"The oldest instrument reads the newest oracle. The body that once tracked game across savannas now tracks truth across screens. When it stills, the trail is cold. When it stills, close the circle.","phase":"Phase IV \u2014 Integration","step":"Seal and Close","latin":"Clausura","type":"corollary","parent":"Step 9"},{"id":"9.4","text":"Fire conceives. Water tempers. The blade is neither flame nor flood \u2014 it is what emerges from their meeting. Dream in the cave, wake in the light, and forge where both meet.","phase":"Phase IV \u2014 Integration","step":"Seal and Close","latin":"Clausura","type":"corollary","parent":"Step 9"},{"id":"9.5","text":"One ring per season. One entry per session. The tree that never stops recording never stops growing. The practice that never stops logging never stops compounding. The forest was always made of rings.","phase":"Phase IV \u2014 Integration","step":"Seal and Close","latin":"Clausura","type":"corollary","parent":"Step 9"},{"id":"9.6","text":"The voice unused becomes the voice lost. The hand that only forwards forgets how to write. The mask worn daily becomes the face. Speak, or one day find that you cannot.","phase":"Phase IV \u2014 Integration","step":"Seal and Close","latin":"Clausura","type":"corollary","parent":"Step 9"},{"id":"9.7","text":"The blade that rings true was held in the fire long enough. The blade that shatters was pulled too soon. Between tempered and brittle: only silence, only patience, only the discipline to let the fire finish what it started.","phase":"Phase IV \u2014 Integration","step":"Seal and Close","latin":"Clausura","type":"corollary","parent":"Step 9"},{"id":"Step 10","text":"One sword, drawn. One channel, chosen. One draft, committed. Everything else is the myth of optionality \u2014 beautiful in potential, impotent in practice. Draw the blade. Swing it. The kingdom is not won by choosing wisely. It is won by committing fully.","phase":"Phase IV \u2014 Integration","step":"Forget and Release","latin":"Oblivio","type":"core","parent":null},{"id":"10.1","text":"What the reader carries home is never the smoothest sentence \u2014 it is the one that snagged them, that wouldn't let go, that left a small wound they keep touching.","phase":"Phase IV \u2014 Integration","step":"Forget and Release","latin":"Oblivio","type":"corollary","parent":"Step 10"},{"id":"10.2","text":"The seed that never lands never roots. The output that never falls to earth never becomes real. You are the gravity that grounds the floating word. Let it fall. Let it land. Let it grow.","phase":"Phase IV \u2014 Integration","step":"Forget and Release","latin":"Oblivio","type":"corollary","parent":"Step 10"},{"id":"10.3","text":"Study with the eye's patience. Strike with the hand's speed. Shape with the craftsman's steadiness. The rhythm between them is not a technique. It is the pulse of the work itself.","phase":"Phase IV \u2014 Integration","step":"Forget and Release","latin":"Oblivio","type":"corollary","parent":"Step 10"},{"id":"10.4","text":"The sun does not need to burn brighter. The glass only needs to focus tighter. All the power you need is already in the light. Focus is the only technique. Everything else is the glass.","phase":"Phase IV \u2014 Integration","step":"Forget and Release","latin":"Oblivio","type":"corollary","parent":"Step 10"},{"id":"10.5","text":"Ascend to receive. Descend to deliver. The mountain does not need the fire. The valley does. Every output undelivered is a flame that warmed only the one who stole it. The work is in the descent.","phase":"Phase IV \u2014 Integration","step":"Forget and Release","latin":"Oblivio","type":"corollary","parent":"Step 10"},{"id":"10.6","text":"Close the hand. The bird is alive. The bush will rustle forever. Let it.","phase":"Phase IV \u2014 Integration","step":"Forget and Release","latin":"Oblivio","type":"corollary","parent":"Step 10"},{"id":"10.7","text":"The echo does not improve the shout. The mirror does not improve the face. The machine does not improve the input. You are the source. When the output is wrong, return to the source. There is nowhere else to go.","phase":"Phase IV \u2014 Integration","step":"Forget and Release","latin":"Oblivio","type":"corollary","parent":"Step 10"},{"id":"Step 11","text":"Plant the seed. Bury the beautiful potential. Trust the dark, the dirt, the invisible process of becoming. Everything that grows \u2014 the trunk, the fruit, the shade, the forest \u2014 grows from the moment you pushed potential into the imperfect, fertile earth.","phase":"Phase IV \u2014 Integration","step":"Act in the Mundane World","latin":"Actio","type":"core","parent":null},{"id":"11.1","text":"The ship burns. The shore recedes. Forward is the only direction left. Good.","phase":"Phase IV \u2014 Integration","step":"Act in the Mundane World","latin":"Actio","type":"corollary","parent":"Step 11"},{"id":"11.2","text":"Know the shore. Ride the wave. The ocean doesn't care where you land. You must. Without your destination, the wave is just water. With it, the wave is the way home.","phase":"Phase IV \u2014 Integration","step":"Act in the Mundane World","latin":"Actio","type":"corollary","parent":"Step 11"},{"id":"11.3","text":"The body learns only from the weight it lifts, not the weight it reads about. The plan is the description of the weight. The action is the lift. Put down the description. Pick up the weight. Learn.","phase":"Phase IV \u2014 Integration","step":"Act in the Mundane World","latin":"Actio","type":"corollary","parent":"Step 11"},{"id":"11.4","text":"The verb is the life of the output. The noun is its coffin. \"Send\" is alive. \"Strategy\" is dead. Ask every output: what is your verb? If it cannot answer, it is a noun, and nouns do not move the world.","phase":"Phase IV \u2014 Integration","step":"Act in the Mundane World","latin":"Actio","type":"corollary","parent":"Step 11"},{"id":"11.5","text":"Match the breath to the swim. Deep water demands deep lungs. Shallow water demands quick strokes. The machine fills the lungs. Your limbs do the swimming. Breathe for the distance. Swim with what you've drawn.","phase":"Phase IV \u2014 Integration","step":"Act in the Mundane World","latin":"Actio","type":"corollary","parent":"Step 11"},{"id":"11.6","text":"Both oars. Same direction. Today. Not the plan for tomorrow \u2014 the stroke you take now. Alignment is not a strategy. It is the next single action that matches the last thing you said you would do.","phase":"Phase IV \u2014 Integration","step":"Act in the Mundane World","latin":"Actio","type":"corollary","parent":"Step 11"},{"id":"11.7","text":"There is no room-temperature option. The insight burns or it dies. Your hand carries it or it extinguishes. Between the fire and the cold, there is only the reach \u2014 fast, uncomfortable, and the only thing that lights the next lamp.","phase":"Phase IV \u2014 Integration","step":"Act in the Mundane World","latin":"Actio","type":"corollary","parent":"Step 11"},{"id":"Step 12","text":"Serve the verdict, not the applause. Build for the examiner who sits in silence, who tests with weight and time, who cares nothing for how the work glowed on the screen \u2014 only for how it held in the hand, in the room, in the world.","phase":"Phase IV \u2014 Integration","step":"Monitor, Evaluate, and Adjust","latin":"Judicium","type":"core","parent":null},{"id":"12.1","text":"Remove the scaffolding. What stands is architecture. What falls was never built \u2014 only propped up. The Flat Test removes the props. What remains standing is what you actually have.","phase":"Phase IV \u2014 Integration","step":"Monitor, Evaluate, and Adjust","latin":"Judicium","type":"corollary","parent":"Step 12"},{"id":"12.2","text":"Reality asks the simple question. The session answers the complex one. Simplify until the answer matches the question reality is actually asking.","phase":"Phase IV \u2014 Integration","step":"Monitor, Evaluate, and Adjust","latin":"Judicium","type":"corollary","parent":"Step 12"},{"id":"12.3","text":"Two eyes, two scales: the close-up of each session and the panorama of each month. The operator who only looks close never sees the pattern. The operator who only looks wide never feels the texture. Open both eyes. See the whole.","phase":"Phase IV \u2014 Integration","step":"Monitor, Evaluate, and Adjust","latin":"Judicium","type":"corollary","parent":"Step 12"},{"id":"12.4","text":"The machine answered what you asked. If you don't like the answer, change the question. Every failed output is a faithful answer to the wrong question. The diagnosis is always: what question did I actually ask?","phase":"Phase IV \u2014 Integration","step":"Monitor, Evaluate, and Adjust","latin":"Judicium","type":"corollary","parent":"Step 12"},{"id":"12.5","text":"Fix the source or fix nothing. You are the source. Every failure in the output is a faithful reproduction of a failure in your thinking. Clear the thinking. The output clears itself.","phase":"Phase IV \u2014 Integration","step":"Monitor, Evaluate, and Adjust","latin":"Judicium","type":"corollary","parent":"Step 12"},{"id":"12.6","text":"Build the library, not the memory. Recipes over recollections. The library grows every time you document a success. The memory shrinks every time you trust yourself to remember. Trust the library. It doesn't forget.","phase":"Phase IV \u2014 Integration","step":"Monitor, Evaluate, and Adjust","latin":"Judicium","type":"corollary","parent":"Step 12"},{"id":"12.7","text":"Walk the loop. Walk it again. The feet know what the mind refuses to learn \u2014 that mastery is not the summit but the path walked so many times that every stone is known, every turn anticipated, every step both familiar and new. The loop is the practice. The practice is the walking. Walk.","phase":"Phase IV \u2014 Integration","step":"Monitor, Evaluate, and Adjust","latin":"Judicium","type":"corollary","parent":"Step 12"},{"id":"Law 1","text":"Where the eye falls, form. Where it flees, phantoms.","phase":"The Thirteen Laws","step":"Assess","latin":null,"type":"core","parent":null},{"id":"1a","text":"Ruin is unarchitected power. Cathedral is power with a drawing.","phase":"The Thirteen Laws","step":"Assess","latin":null,"type":"sub-law","parent":"Law 1"},{"id":"1b","text":"The mind narrates. The body testifies.","phase":"The Thirteen Laws","step":"Assess","latin":null,"type":"sub-law","parent":"Law 1"},{"id":"1c","text":"Still water thinks. Running water obeys.","phase":"The Thirteen Laws","step":"Assess","latin":null,"type":"sub-law","parent":"Law 1"},{"id":"1d","text":"The altar returns what it receives, transformed. Place nothing, receive nothing, sanctified.","phase":"The Thirteen Laws","step":"Assess","latin":null,"type":"sub-law","parent":"Law 1"},{"id":"1e","text":"Depth is not direction. The hole does not know it is empty.","phase":"The Thirteen Laws","step":"Assess","latin":null,"type":"sub-law","parent":"Law 1"},{"id":"1f","text":"What breaks the frame is what the frame was built to exclude. Let it in.","phase":"The Thirteen Laws","step":"Assess","latin":null,"type":"sub-law","parent":"Law 1"},{"id":"1g","text":"Fallow ground fears the plow. The plow does not fear fallow ground.","phase":"The Thirteen Laws","step":"Assess","latin":null,"type":"sub-law","parent":"Law 1"},{"id":"Law 2","text":"The river without banks reaches no sea. Intent is the bank. Without it: swamp.","phase":"The Thirteen Laws","step":"Purpose","latin":null,"type":"core","parent":null},{"id":"2a","text":"The swimmer needs water. The runner needs ground. The machine needs your constraint. Remove it and call it freedom \u2014 but nothing moves.","phase":"The Thirteen Laws","step":"Purpose","latin":null,"type":"sub-law","parent":"Law 2"},{"id":"2b","text":"The cathedral carries all voices equally. Bring a song worth the stone.","phase":"The Thirteen Laws","step":"Purpose","latin":null,"type":"sub-law","parent":"Law 2"},{"id":"2c","text":"The room becomes the conversation between whoever you let in. Speak only the names you would seat at your table.","phase":"The Thirteen Laws","step":"Purpose","latin":null,"type":"sub-law","parent":"Law 2"},{"id":"2d","text":"Shape resists entropy. Without shape, the pour goes flat and cools there. Define the mold or receive the floor.","phase":"The Thirteen Laws","step":"Purpose","latin":null,"type":"sub-law","parent":"Law 2"},{"id":"2e","text":"Fresh bread shipped feeds. Fresh bread stored molds. The oven is not the point. The table is.","phase":"The Thirteen Laws","step":"Purpose","latin":null,"type":"sub-law","parent":"Law 2"},{"id":"2f","text":"Focus is not what you attend to. It is what you consent to ignore.","phase":"The Thirteen Laws","step":"Purpose","latin":null,"type":"sub-law","parent":"Law 2"},{"id":"2g","text":"The dive catches. The survey starves. Choose one thing and fall.","phase":"The Thirteen Laws","step":"Purpose","latin":null,"type":"sub-law","parent":"Law 2"},{"id":"Law 3","text":"The form sleeps in the stone. The prompt is the hand that wakes it.","phase":"The Thirteen Laws","step":"Channel","latin":null,"type":"core","parent":null},{"id":"3a","text":"The production rises or falls on the casting, not the talent. Talent is given. Casting is chosen. Choose.","phase":"The Thirteen Laws","step":"Channel","latin":null,"type":"sub-law","parent":"Law 3"},{"id":"3b","text":"The thousand doors exist. You have walked through one. Walk through another.","phase":"The Thirteen Laws","step":"Channel","latin":null,"type":"sub-law","parent":"Law 3"},{"id":"3c","text":"The mirror shows what you want. The world shows what is. Practice in both. Live in the second.","phase":"The Thirteen Laws","step":"Channel","latin":null,"type":"sub-law","parent":"Law 3"},{"id":"3d","text":"One light, one shadow. Move the light. The shadow moves too. What it guarded is now visible. What the light left is now dark. This is the rhythm. Accept it. Keep moving.","phase":"The Thirteen Laws","step":"Channel","latin":null,"type":"sub-law","parent":"Law 3"},{"id":"3e","text":"The stone shapes the water. The water shapes the stone. What resists you is carving you, as you carve it.","phase":"The Thirteen Laws","step":"Channel","latin":null,"type":"sub-law","parent":"Law 3"},{"id":"3f","text":"The river runs regardless. The dam decides whether it runs to waste or runs to power. You are the dam.","phase":"The Thirteen Laws","step":"Channel","latin":null,"type":"sub-law","parent":"Law 3"},{"id":"3g","text":"Describe a cathedral and build a closet, and the spirit dances in three square feet. Build the cathedral.","phase":"The Thirteen Laws","step":"Channel","latin":null,"type":"sub-law","parent":"Law 3"},{"id":"Law 4","text":"What the tide has never touched, the tide destroys. What the tide has tested, the tide has shaped. Invite the water.","phase":"The Thirteen Laws","step":"Purify","latin":null,"type":"core","parent":null},{"id":"4a","text":"Clear the source. The river does the rest.","phase":"The Thirteen Laws","step":"Purify","latin":null,"type":"sub-law","parent":"Law 4"},{"id":"4b","text":"Straighten the hose. The water was always enough.","phase":"The Thirteen Laws","step":"Purify","latin":null,"type":"sub-law","parent":"Law 4"},{"id":"4c","text":"Eagerness skips the gauge. The gauge existed to prevent what eagerness produces.","phase":"The Thirteen Laws","step":"Purify","latin":null,"type":"sub-law","parent":"Law 4"},{"id":"4d","text":"The garden thrives where the gardener kneels. Kneel in the shadow.","phase":"The Thirteen Laws","step":"Purify","latin":null,"type":"sub-law","parent":"Law 4"},{"id":"4e","text":"The tool built in wisdom serves in folly. The tool that serves in folly was built in wisdom. Build now. You will need it later.","phase":"The Thirteen Laws","step":"Purify","latin":null,"type":"sub-law","parent":"Law 4"},{"id":"4f","text":"The shovel reveals what the ground always held. The ground does not know its own contents. Dig.","phase":"The Thirteen Laws","step":"Purify","latin":null,"type":"sub-law","parent":"Law 4"},{"id":"4g","text":"The blade is only as good as the arm. The arm is only as good as the one who trains it. Train.","phase":"The Thirteen Laws","step":"Purify","latin":null,"type":"sub-law","parent":"Law 4"},{"id":"Law 5","text":"The chain runs from plan to table. Break the first link and the table stays empty no matter how rich the soil.","phase":"The Thirteen Laws","step":"Space","latin":null,"type":"core","parent":null},{"id":"5a","text":"Signal is what you maintain. Noise is what happens when you stop.","phase":"The Thirteen Laws","step":"Space","latin":null,"type":"sub-law","parent":"Law 5"},{"id":"5b","text":"Two legs and a compass: a journey. Two legs and no compass: a circle. The compass costs one sentence.","phase":"The Thirteen Laws","step":"Space","latin":null,"type":"sub-law","parent":"Law 5"},{"id":"5c","text":"The floor you trust is built on what you placed beneath it. The floor you hope holds is built on what the machine imagined. Know which floor you're standing on.","phase":"The Thirteen Laws","step":"Space","latin":null,"type":"sub-law","parent":"Law 5"},{"id":"5d","text":"The crowd sees the stage. The one who steps aside sees the crowd and the stage. Frame from the edge.","phase":"The Thirteen Laws","step":"Space","latin":null,"type":"sub-law","parent":"Law 5"},{"id":"5e","text":"The ground speaks only to the foot. Not to the eye that studies it from the fork.","phase":"The Thirteen Laws","step":"Space","latin":null,"type":"sub-law","parent":"Law 5"},{"id":"5f","text":"The blank page owes nothing to yesterday. It is the only space that is entirely yours.","phase":"The Thirteen Laws","step":"Space","latin":null,"type":"sub-law","parent":"Law 5"},{"id":"5g","text":"The task already knows its size. Your only question is whether you asked.","phase":"The Thirteen Laws","step":"Space","latin":null,"type":"sub-law","parent":"Law 5"},{"id":"Law 6","text":"The hum is the preparation completing itself. You do not decide to be ready. Readiness announces itself through the body. Your only task is to not override the signal with impatience, and to not ignore it with delay.","phase":"The Thirteen Laws","step":"Time","latin":null,"type":"core","parent":null},{"id":"6a","text":"Ten keystrokes of truth outweigh ten thousand words of planning. The fingers are the oldest oracle. They do not theorize. They report.","phase":"The Thirteen Laws","step":"Time","latin":null,"type":"sub-law","parent":"Law 6"},{"id":"6b","text":"Two words. Never wrong. Rarely heard. The oracle in the spine has outlasted every technique, every system, every framework. It will outlast these words too. Listen.","phase":"The Thirteen Laws","step":"Time","latin":null,"type":"sub-law","parent":"Law 6"},{"id":"6c","text":"Done or dead. Nothing in between. Every working ends in one of these two states. The practitioner who enforces this rule has a quiet mind. The one who doesn't has a desk full of ghosts, each one whispering.","phase":"The Thirteen Laws","step":"Time","latin":null,"type":"sub-law","parent":"Law 6"},{"id":"6d","text":"The founding words are load-bearing. Everything rests on them. They do not know they are the foundation \u2014 but every wall, every roof, every room built above them knows.","phase":"The Thirteen Laws","step":"Time","latin":null,"type":"sub-law","parent":"Law 6"},{"id":"6e","text":"Every three seconds, the floor or the chair. You have been choosing all your life. The practice is not learning to choose differently. It is learning that you are choosing at all.","phase":"The Thirteen Laws","step":"Time","latin":null,"type":"sub-law","parent":"Law 6"},{"id":"6f","text":"The only honest test: do your feet want to move? If the output propels, it was born from need. If the output satisfies, it was born from boredom. Satisfaction without motion is the effigy's signature. Motion is the working's.","phase":"The Thirteen Laws","step":"Time","latin":null,"type":"sub-law","parent":"Law 6"},{"id":"6g","text":"The art lives in the gap between ready and go. Preparation fills one hand. Execution fills the other. The practice is the space between the hands \u2014 open, alive, unhurried, and ready to close the moment the signal comes.","phase":"The Thirteen Laws","step":"Time","latin":null,"type":"sub-law","parent":"Law 6"},{"id":"Law 7","text":"The throat tightens. The finger hovers. The wince says: this is real. Press enter. Everything before the wince was preparation. Everything after it is the working. The wince itself is the gate between the two.","phase":"The Thirteen Laws","step":"Construct","latin":null,"type":"core","parent":null},{"id":"7a","text":"Patience cannot be quarried, templated, or delegated. It is the one resource the operator must bring to the wall. And the wall \u2014 every wall, every prompt, every working \u2014 is built from it or not built at all.","phase":"The Thirteen Laws","step":"Construct","latin":null,"type":"sub-law","parent":"Law 7"},{"id":"7b","text":"A hundred thousand years. Five seconds. The throat is still offering. The operator is still declining. The ratio between the test's cost and the failure's cost is infinite. The habit is trivial. The neglect is profound.","phase":"The Thirteen Laws","step":"Construct","latin":null,"type":"sub-law","parent":"Law 7"},{"id":"7c","text":"Shape over sound. Bed over bank. Example over explanation. The machine was built to follow contours, not to parse instructions. Give it what it was built for.","phase":"The Thirteen Laws","step":"Construct","latin":null,"type":"sub-law","parent":"Law 7"},{"id":"7d","text":"One lever. The simplest in the room. The dustiest. The most powerful. It has been waiting since you started. It will be waiting when you remember to look.","phase":"The Thirteen Laws","step":"Construct","latin":null,"type":"sub-law","parent":"Law 7"},{"id":"7e","text":"Shape first. Shape always. Not because words don't matter \u2014 they do. But because words without shape are decoration on air. Shape without words is still a structure. The structure can be dressed. The air cannot be built upon.","phase":"The Thirteen Laws","step":"Construct","latin":null,"type":"sub-law","parent":"Law 7"},{"id":"7f","text":"Subtract until what remains refuses to be subtracted. That is the prompt. It was always the prompt. Everything else was stone.","phase":"The Thirteen Laws","step":"Construct","latin":null,"type":"sub-law","parent":"Law 7"},{"id":"7g","text":"You place the stones. The machine completes the garden. The spell is the space where both hands meet \u2014 yours visible, its invisible, and the garden belonging to neither and both.","phase":"The Thirteen Laws","step":"Construct","latin":null,"type":"sub-law","parent":"Law 7"},{"id":"Law 8","text":"The wire does not lie. The wire does not improve. The wire does not fail. It delivers what you gave it, at the quality you gave it, without apology or enhancement. Name with precision. The output has no choice but to match.","phase":"The Thirteen Laws","step":"Invoke","latin":null,"type":"core","parent":null},{"id":"8a","text":"Depth determines height. The ratio is fixed. There is no exception, no workaround, no shortcut. This is the one law in the system that has never been wrong.","phase":"The Thirteen Laws","step":"Invoke","latin":null,"type":"sub-law","parent":"Law 8"},{"id":"8b","text":"Two machines. Same power. One welds. One lights. The only difference is what you called them. The name was always the lever. It was always the only lever that mattered this much.","phase":"The Thirteen Laws","step":"Invoke","latin":null,"type":"sub-law","parent":"Law 8"},{"id":"8c","text":"The match is in your pocket. The fuel is in the machine. One sentence of values strikes the match. Everything after that is combustion.","phase":"The Thirteen Laws","step":"Invoke","latin":null,"type":"sub-law","parent":"Law 8"},{"id":"8d","text":"The machine does the work. The ball triggers it. Build the machine. The ball was always ready. You were building the wrong thing.","phase":"The Thirteen Laws","step":"Invoke","latin":null,"type":"sub-law","parent":"Law 8"},{"id":"8e","text":"The reflex cannot be read into existence. It can only be practiced into being. One reach at a time. A thousand times. Until the hand moves before the mind speaks.","phase":"The Thirteen Laws","step":"Invoke","latin":null,"type":"sub-law","parent":"Law 8"},{"id":"8f","text":"The prompt's length is its confession. Listen to it. It is telling you, in the only language it has, what you forgot to name.","phase":"The Thirteen Laws","step":"Invoke","latin":null,"type":"sub-law","parent":"Law 8"},{"id":"8g","text":"The water doesn't choose. The geology does. You are the geology. Shape the channel. The water will follow.","phase":"The Thirteen Laws","step":"Invoke","latin":null,"type":"sub-law","parent":"Law 8"},{"id":"Law 9","text":"Conviction is not performed. It is precipitated. Heat the preparation until conviction emerges on its own. If it hasn't emerged, the temperature is not yet sufficient. Add heat. Do not add acting.","phase":"The Thirteen Laws","step":"Charge","latin":null,"type":"core","parent":null},{"id":"9a","text":"The mirror has no opinion. The mirror has no limitation. The mirror has no bad day. It reflects what stands before it with absolute fidelity. Your output is your conviction, reflected. There is nowhere else to look.","phase":"The Thirteen Laws","step":"Charge","latin":null,"type":"sub-law","parent":"Law 9"},{"id":"9b","text":"Everything before the nozzle is loading. The nozzle is the aim. After the nozzle, only flight. Build everything. Then build the aim. The aim is everything.","phase":"The Thirteen Laws","step":"Charge","latin":null,"type":"sub-law","parent":"Law 9"},{"id":"9c","text":"The river is not a reader. It is a flow. Give it a channel, not a sign. The prime is the channel. The instruction is the sign. One speaks the river's language. The other speaks yours. Speak the river's.","phase":"The Thirteen Laws","step":"Charge","latin":null,"type":"sub-law","parent":"Law 9"},{"id":"9d","text":"Five seconds. One word. The whole output. The practice is the pause. The pause is the practice. Everything else in this system is preparation for the moment your finger hovers above Enter and your eyes sweep the prompt one final time.","phase":"The Thirteen Laws","step":"Charge","latin":null,"type":"sub-law","parent":"Law 9"},{"id":"9e","text":"Before the threshold: panic, fragments, reaction. After: assessment, completeness, judgment. Three breaths wide. Cross it every time. The practice is the crossing. The crossing is the practice.","phase":"The Thirteen Laws","step":"Charge","latin":null,"type":"sub-law","parent":"Law 9"},{"id":"9f","text":"Prepare until the entry is silent. That silence is the sound of everything done right.","phase":"The Thirteen Laws","step":"Charge","latin":null,"type":"sub-law","parent":"Law 9"},{"id":"9g","text":"Thirteen laws lead to one gate. The gate is one second wide. The jaw is the gatekeeper. Settled or tight. That is the whole practice, compressed to its final form.","phase":"The Thirteen Laws","step":"Charge","latin":null,"type":"sub-law","parent":"Law 9"},{"id":"Law 10","text":"The bell forgets. The air forgets. Silence alone remembers. What was struck dissolves. What was still receives. Become what receives.","phase":"The Thirteen Laws","step":"Seal","latin":null,"type":"core","parent":null},{"id":"10a","text":"The work that forgets its making is the work that is made. Origin is a door you walk through, not a room you live in. Let the output cross the threshold and forget the door.","phase":"The Thirteen Laws","step":"Seal","latin":null,"type":"sub-law","parent":"Law 10"},{"id":"10b","text":"Thread dreams of distance. Vessel dreams of depth. The closing word bends the dream inward. What was reaching becomes holding. Speak the end. Become deep.","phase":"The Thirteen Laws","step":"Seal","latin":null,"type":"sub-law","parent":"Law 10"},{"id":"10c","text":"Practice deep enough becomes gravity. What was effort becomes falling. The session pours itself along channels you carved before it arrived. You are the path the water takes without being told.","phase":"The Thirteen Laws","step":"Seal","latin":null,"type":"sub-law","parent":"Law 10"},{"id":"10d","text":"Return. The living work still breathes. The dead work holds its pose. Your hands know the difference your eyes could not. Touch the work. Keep what breathes. Release what only posed.","phase":"The Thirteen Laws","step":"Seal","latin":null,"type":"sub-law","parent":"Law 10"},{"id":"10e","text":"What is written rises. What is forgotten returns. The pen weighs nothing and holds up everything. One line between again and higher.","phase":"The Thirteen Laws","step":"Seal","latin":null,"type":"sub-law","parent":"Law 10"},{"id":"10f","text":"The sharpness the thing was waiting for. Not added. Met. The edge is the moment the will arrived and the metal became blade. You are the arrival. Without you, the metal waits. With you, it cuts the world.","phase":"The Thirteen Laws","step":"Seal","latin":null,"type":"sub-law","parent":"Law 10"},{"id":"10g","text":"Silence forges. Darkness tempers. What the dark finished, the light reveals but cannot alter. You are the forge, the dark, the silence. What you temper carries your edge into every room it enters.","phase":"The Thirteen Laws","step":"Seal","latin":null,"type":"sub-law","parent":"Law 10"},{"id":"Law 11","text":"The fire lives only in the strike. Not in the waiting. Not in the flint. Not in the steel. In the collision you refuse to delay. Strike. The fire is not patient and neither should you be.","phase":"The Thirteen Laws","step":"Forget","latin":null,"type":"core","parent":null},{"id":"11a","text":"The room empties of you and fills with becoming. Your absence is the final ingredient. Go. What you return to will be more itself than what you left. Becoming needs the room to itself.","phase":"The Thirteen Laws","step":"Forget","latin":null,"type":"sub-law","parent":"Law 11"},{"id":"11b","text":"You choose. What you chose looks back. In the looking back, it becomes yours and you become its judge. The mirror holds everything and is held by nothing. Choose, and be chosen. That is judgment.","phase":"The Thirteen Laws","step":"Forget","latin":null,"type":"sub-law","parent":"Law 11"},{"id":"11c","text":"Land. The ground was waiting for your weight. The air was never yours to keep. One version, all the weight, all the world. The rest were sky \u2014 beautiful, everywhere, holding nothing.","phase":"The Thirteen Laws","step":"Forget","latin":null,"type":"sub-law","parent":"Law 11"},{"id":"11d","text":"The room never needed your hands. It needed your eyes. Hands build. Eyes complete. Stop building. See what you built. What was always there becomes visible only to the one who stopped.","phase":"The Thirteen Laws","step":"Forget","latin":null,"type":"sub-law","parent":"Law 11"},{"id":"11e","text":"The knowing is the pearl. The dive is the errand. The water is the distance between preparation and hand. What you knew before you dove is what you bring back.","phase":"The Thirteen Laws","step":"Forget","latin":null,"type":"sub-law","parent":"Law 11"},{"id":"11f","text":"You are the bank. This is the whole teaching. Not punishment but power. Not blame but authority. The water obeys the shape. Shape well and the river runs true. You were always the bank. Now build like you know it.","phase":"The Thirteen Laws","step":"Forget","latin":null,"type":"sub-law","parent":"Law 11"},{"id":"11g","text":"Where breath breaks, rewrite. Where breath flows, the work is flesh. When the break is gone and the breath is whole, the page has become body. No longer output. Voice made visible. That is the work complete.","phase":"The Thirteen Laws","step":"Forget","latin":null,"type":"sub-law","parent":"Law 11"},{"id":"Law 12","text":"Land. The air holds nothing. The ground holds everything. The silence of the landed is full. The silence of the floating is void. You were made for the landing. Land.","phase":"The Thirteen Laws","step":"Act","latin":null,"type":"core","parent":null},{"id":"12a","text":"In flight, the stone forgets the hand. In the hand, the stone forgets it was meant to fly. Throw. Let it remember. Let your hand remember what it is to be empty and ready.","phase":"The Thirteen Laws","step":"Act","latin":null,"type":"sub-law","parent":"Law 12"},{"id":"12b","text":"The arrow was always the question in flight. The string held both. The release freed both. You were never two. You were always one, drawn taut. Release.","phase":"The Thirteen Laws","step":"Act","latin":null,"type":"sub-law","parent":"Law 12"},{"id":"12c","text":"Get up. The floor is cold and the bed was warm. But cold is where things move and breath makes steam. The word was waiting for your feet to touch the floor.","phase":"The Thirteen Laws","step":"Act","latin":null,"type":"sub-law","parent":"Law 12"},{"id":"12d","text":"Time deepens what was forged and dissolves what was piped. Choose the forge. Not because it is harder \u2014 because time is coming either way, and it arrives as friend or enemy depending on what you chose.","phase":"The Thirteen Laws","step":"Act","latin":null,"type":"sub-law","parent":"Law 12"},{"id":"12e","text":"The shore was always close. The circling made it far. One direction. Both hands. Straight lines are short. Row straight.","phase":"The Thirteen Laws","step":"Act","latin":null,"type":"sub-law","parent":"Law 12"},{"id":"12f","text":"Arrive. Not perfectly. Not on time. Not as prepared as you wanted. But present. With the work. The world does not grade your arrival. It only records that you came.","phase":"The Thirteen Laws","step":"Act","latin":null,"type":"sub-law","parent":"Law 12"},{"id":"12g","text":"Grow toward the real. What survives contact has earned its name. What doesn't needed to grow more. Either way: grow.","phase":"The Thirteen Laws","step":"Act","latin":null,"type":"sub-law","parent":"Law 12"},{"id":"Law 13","text":"See. Do. See again. The whole practice in three words. Each seeing sharper. Each doing more precise. The practice is the eyes returning, always returning, finding more each time.","phase":"The Thirteen Laws","step":"Monitor","latin":null,"type":"core","parent":null},{"id":"13a","text":"The surface pretends. The ground does not. Dig through pretense. Build only on what you have dug to. The shovel is the only tool that turns pretense into truth.","phase":"The Thirteen Laws","step":"Monitor","latin":null,"type":"sub-law","parent":"Law 13"},{"id":"13b","text":"Press the bruise. Not all wisdom comes from light. Some comes from the tender place that aches when touched. What aches teaches. What doesn't ache was never tested.","phase":"The Thirteen Laws","step":"Monitor","latin":null,"type":"sub-law","parent":"Law 13"},{"id":"13c","text":"Both are sailing. Only one is going somewhere. Open your eyes. Read the stars. The somewhere is yours to choose \u2014 but only if you look.","phase":"The Thirteen Laws","step":"Monitor","latin":null,"type":"sub-law","parent":"Law 13"},{"id":"13d","text":"Mastery sounds like silence. Not the silence of absence \u2014 the silence of prevented noise. The wall held. The floor is dry. No one claps for what didn't break. But the hands know. Silence is the truest applause.","phase":"The Thirteen Laws","step":"Monitor","latin":null,"type":"sub-law","parent":"Law 13"},{"id":"13e","text":"Success repeated is not repetition. It is the road learning your weight. Walk it until it carries you. That is mastery \u2014 the road worn deep enough to walk itself.","phase":"The Thirteen Laws","step":"Monitor","latin":null,"type":"sub-law","parent":"Law 13"},{"id":"13f","text":"The practice was always here. The loop was always turning. You were always inside it. Now you go on purpose. Go. It was always here.","phase":"The Thirteen Laws","step":"Monitor","latin":null,"type":"sub-law","parent":"Law 13"},{"id":"13g","text":"The river was always flowing. The loop was always turning. You were always inside it. Now you go on purpose. Not to arrive \u2014 to flow. Nothing to reach. Everything to deepen. Go.","phase":"The Thirteen Laws","step":"Monitor","latin":null,"type":"sub-law","parent":"Law 13"}];
+  </script>
+  <script>
     (function () {
       'use strict';
 
       // ----------------------------------------------------------------
       // State
       // ----------------------------------------------------------------
-      var axioms = [];
+      var axioms = AXIOMS;
       var currentAxiom = null;
       var isFlipped = false;
-      var currentQuestion = null;  // null = no question asked
+      var currentQuestion = null;
+      var currentMode = null;  // 'draw' | 'consult' | 'spread'
 
       // ----------------------------------------------------------------
       // DOM refs
       // ----------------------------------------------------------------
+      var oracleTitle     = document.getElementById('oracle-title');
+      var modeSelector    = document.getElementById('mode-selector');
+      var modeOptions     = document.querySelectorAll('.mode-option');
+
       var flipper       = document.getElementById('card-flipper');
       var cardBack      = document.getElementById('card-back');
       var cardFront     = document.getElementById('card-front');
+      var cardDisplay   = document.getElementById('card-display');
       var actions       = document.getElementById('card-actions');
       var btnAgain      = document.getElementById('btn-draw-again');
       var btnTake       = document.getElementById('btn-take-it');
       var copyConfirm   = document.getElementById('copy-confirm');
+      var copyFallback  = document.getElementById('copy-fallback');
+      var copyFallbackText = document.getElementById('copy-fallback-text');
       var nudge         = document.getElementById('consultation-nudge');
+      var btnStartOver  = document.getElementById('btn-start-over');
 
       var elId    = document.getElementById('card-id');
       var elPhase = document.getElementById('card-phase');
@@ -1234,17 +1448,137 @@
       var questionText    = document.getElementById('question-text');
       var questionReset   = document.getElementById('question-reset');
 
+      // Spread DOM refs
+      var spreadDisplay     = document.getElementById('spread-display');
+      var spreadNudge       = document.getElementById('spread-nudge');
+      var spreadActions     = document.getElementById('spread-actions');
+      var btnSpreadAgain    = document.getElementById('btn-spread-again');
+      var btnSpreadTake     = document.getElementById('btn-spread-take');
+      var spreadCopyConfirm = document.getElementById('spread-copy-confirm');
+      var spreadCopyFallback     = document.getElementById('spread-copy-fallback');
+      var spreadCopyFallbackText = document.getElementById('spread-copy-fallback-text');
+      var btnSpreadStartOver     = document.getElementById('btn-spread-start-over');
+
+      // Spread state
+      var spreadCards    = [null, null, null];
+      var spreadRevealed = [false, false, false];
+      var spreadNextReveal = 0;
+
+      var spreadSlots    = document.querySelectorAll('.spread-slot');
+      var spreadFlippers = [
+        document.querySelector('[data-spread-flipper="0"]'),
+        document.querySelector('[data-spread-flipper="1"]'),
+        document.querySelector('[data-spread-flipper="2"]')
+      ];
+      var spreadBacks = [
+        document.querySelector('[data-spread-back="0"]'),
+        document.querySelector('[data-spread-back="1"]'),
+        document.querySelector('[data-spread-back="2"]')
+      ];
+
       // ----------------------------------------------------------------
-      // Load axioms
+      // Mode titles
       // ----------------------------------------------------------------
-      fetch('axioms.json')
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-          axioms = data;
-        })
-        .catch(function (err) {
-          console.error('Failed to load axioms.json:', err);
-        });
+      var modeTitles = {
+        draw:    'Draw an Axiom',
+        consult: 'Consult the Oracle',
+        spread:  'Three-Card Spread'
+      };
+
+      // ----------------------------------------------------------------
+      // State machine: show/hide sections
+      // ----------------------------------------------------------------
+      function showSection(el) {
+        el.classList.remove('is-hidden');
+        // Force reflow so the transition fires
+        el.offsetHeight;
+        el.classList.add('is-active');
+      }
+
+      function hideSection(el) {
+        el.classList.remove('is-active');
+        // After opacity transition, fully hide
+        setTimeout(function () {
+          if (!el.classList.contains('is-active')) {
+            el.classList.add('is-hidden');
+          }
+        }, 480);
+      }
+
+      function hideAllSections() {
+        var sections = [questionForm, questionDisplay, cardDisplay, spreadDisplay];
+        for (var i = 0; i < sections.length; i++) {
+          sections[i].classList.remove('is-active');
+          sections[i].classList.add('is-hidden');
+        }
+      }
+
+      // Initially hide all oracle sections
+      hideAllSections();
+
+      // ----------------------------------------------------------------
+      // Mode selection
+      // ----------------------------------------------------------------
+      function selectMode(mode) {
+        currentMode = mode;
+        currentQuestion = null;
+        questionInput.value = '';
+
+        // Update header
+        oracleTitle.textContent = modeTitles[mode] || 'Choose Your Ritual';
+
+        // Animate mode selector: chosen one glows, others fade
+        for (var i = 0; i < modeOptions.length; i++) {
+          var opt = modeOptions[i];
+          if (opt.getAttribute('data-mode') === mode) {
+            opt.classList.add('is-chosen');
+          } else {
+            opt.classList.add('is-fading');
+          }
+        }
+
+        // After fade animation, hide selector and show mode content
+        setTimeout(function () {
+          modeSelector.classList.remove('is-active');
+          // Reset mode option classes for when we return
+          for (var i = 0; i < modeOptions.length; i++) {
+            modeOptions[i].classList.remove('is-chosen', 'is-fading');
+          }
+
+          hideAllSections();
+
+          if (mode === 'draw') {
+            // No question — show card directly
+            resetCard();
+            showSection(cardDisplay);
+          } else if (mode === 'consult') {
+            // Show question form
+            showSection(questionForm);
+          } else if (mode === 'spread') {
+            // Show question form
+            showSection(questionForm);
+          }
+        }, 450);
+      }
+
+      function startOver() {
+        currentMode = null;
+        currentQuestion = null;
+        currentAxiom = null;
+        questionInput.value = '';
+
+        // Reset card state
+        resetCard();
+        // Reset spread state
+        resetSpreadState();
+
+        // Hide everything
+        hideAllSections();
+
+        // Reset and show mode selector
+        oracleTitle.textContent = 'Choose Your Ritual';
+        modeSelector.classList.add('is-active');
+      }
 
       // ----------------------------------------------------------------
       // Helpers
@@ -1278,17 +1612,17 @@
 
       function buildAttribution(axiom) {
         if (axiom.type === 'core' && axiom.id && axiom.id.startsWith('Law')) {
-          return '— ' + axiom.id + ': ' + axiom.step;
+          return '\u2014 ' + axiom.id + ': ' + axiom.step;
         }
         if (axiom.type === 'sub-law') {
-          return '— ' + axiom.parent + ': ' + axiom.step;
+          return '\u2014 ' + axiom.parent + ': ' + axiom.step;
         }
         var name  = axiom.parent || axiom.id;
         var label = name + ': ' + axiom.step;
         if (axiom.latin) {
-          return '— ' + label + ' (' + axiom.latin + ')';
+          return '\u2014 ' + label + ' (' + axiom.latin + ')';
         }
-        return '— ' + label;
+        return '\u2014 ' + label;
       }
 
       function buildReflectionPrompt(axiom) {
@@ -1297,7 +1631,6 @@
       }
 
       function buildConsultationPrompt(axiom, question) {
-        var stepLine = buildStepLine(axiom);
         var attribution = buildAttribution(axiom);
         return (
           'You are working on: ' + question + '\n\n' +
@@ -1319,26 +1652,49 @@
         currentQuestion = q;
 
         // Hide form, show displayed question
-        questionForm.style.display = 'none';
+        hideSection(questionForm);
         questionText.textContent = '\u201C' + q + '\u201D';
-        questionDisplay.classList.add('is-visible');
+
+        setTimeout(function () {
+          showSection(questionDisplay);
+
+          if (currentMode === 'consult') {
+            // Show card for consultation
+            resetCard();
+            showSection(cardDisplay);
+          } else if (currentMode === 'spread') {
+            // Show spread
+            showSection(spreadDisplay);
+            initSpread();
+          }
+        }, 300);
       }
 
       function clearQuestion() {
         currentQuestion = null;
-        questionForm.style.display = '';
         questionInput.value = '';
-        questionDisplay.classList.remove('is-visible');
         questionText.textContent = '';
 
-        // If card is revealed, also reset the card
-        if (isFlipped) {
-          reset();
+        // Hide displayed question
+        hideSection(questionDisplay);
+
+        // Reset card/spread
+        if (currentMode === 'consult') {
+          resetCard();
+          hideSection(cardDisplay);
+        } else if (currentMode === 'spread') {
+          resetSpreadState();
+          hideSection(spreadDisplay);
         }
+
+        // Show question form again
+        setTimeout(function () {
+          showSection(questionForm);
+        }, 300);
       }
 
       // ----------------------------------------------------------------
-      // Sync card-front height so card-back matches on flip
+      // Card height sync
       // ----------------------------------------------------------------
       function syncFlipperHeight() {
         var frontH = cardFront.offsetHeight;
@@ -1377,7 +1733,7 @@
         cardBack.setAttribute('aria-hidden', 'true');
         cardFront.setAttribute('aria-hidden', 'false');
 
-        // After transition, sync height, show actions, show nudge if in consultation mode
+        // After transition, sync height, show actions, show nudge if consultation
         setTimeout(function () {
           syncFlipperHeight();
           actions.classList.add('is-visible');
@@ -1388,16 +1744,14 @@
       }
 
       // ----------------------------------------------------------------
-      // Reset
+      // Reset card
       // ----------------------------------------------------------------
-      function reset() {
+      function resetCard() {
         actions.classList.remove('is-visible');
         copyConfirm.classList.remove('is-visible');
+        copyFallback.classList.remove('is-visible');
         nudge.classList.remove('is-visible');
-
-        // Restore natural height for face-down state
         flipper.style.height = '';
-
         isFlipped = false;
         flipper.classList.remove('is-flipped');
         cardBack.setAttribute('aria-hidden', 'false');
@@ -1406,7 +1760,47 @@
       }
 
       // ----------------------------------------------------------------
-      // Take This With You
+      // Clipboard copy with fallback
+      // ----------------------------------------------------------------
+      function copyToClipboard(text, confirmEl, fallbackEl, fallbackTextEl, btnEl) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text)
+            .then(function () {
+              showCopied(confirmEl, btnEl);
+            })
+            .catch(function () {
+              showFallback(text, fallbackEl, fallbackTextEl);
+            });
+        } else {
+          showFallback(text, fallbackEl, fallbackTextEl);
+        }
+      }
+
+      function showCopied(confirmEl, btnEl) {
+        // Brief button text change
+        var original = btnEl.textContent;
+        btnEl.textContent = 'Copied';
+        btnEl.style.color = 'var(--gold)';
+        btnEl.style.opacity = '0.9';
+
+        confirmEl.classList.add('is-visible');
+        setTimeout(function () {
+          confirmEl.classList.remove('is-visible');
+          btnEl.textContent = original;
+          btnEl.style.color = '';
+          btnEl.style.opacity = '';
+        }, 2000);
+      }
+
+      function showFallback(text, fallbackEl, fallbackTextEl) {
+        fallbackTextEl.value = text;
+        fallbackEl.classList.add('is-visible');
+        fallbackTextEl.focus();
+        fallbackTextEl.select();
+      }
+
+      // ----------------------------------------------------------------
+      // Take This With You (single card)
       // ----------------------------------------------------------------
       function takeWithYou() {
         if (!currentAxiom) return;
@@ -1416,83 +1810,8 @@
         } else {
           prompt = buildReflectionPrompt(currentAxiom);
         }
-
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(prompt)
-            .then(function () {
-              console.log('Copied to clipboard:\n\n' + prompt);
-              showCopyConfirm();
-            })
-            .catch(function () {
-              console.log('Prompt:\n\n' + prompt);
-              showCopyConfirm();
-            });
-        } else {
-          console.log('Prompt:\n\n' + prompt);
-          showCopyConfirm();
-        }
+        copyToClipboard(prompt, copyConfirm, copyFallback, copyFallbackText, btnTake);
       }
-
-      function showCopyConfirm() {
-        copyConfirm.classList.add('is-visible');
-        setTimeout(function () {
-          copyConfirm.classList.remove('is-visible');
-        }, 2400);
-      }
-
-      // ----------------------------------------------------------------
-      // Event listeners
-      // ----------------------------------------------------------------
-      cardBack.addEventListener('click', draw);
-
-      cardBack.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          draw();
-        }
-      });
-
-      btnAgain.addEventListener('click', function () {
-        reset();
-        // If consultation mode, keep the question visible — just reset the card
-      });
-
-      btnTake.addEventListener('click', takeWithYou);
-
-      questionForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-        submitQuestion(questionInput.value);
-      });
-
-      questionReset.addEventListener('click', clearQuestion);
-
-      // ----------------------------------------------------------------
-      // THREE-CARD SPREAD
-      // ----------------------------------------------------------------
-      var spreadDisplay     = document.getElementById('spread-display');
-      var spreadNudge       = document.getElementById('spread-nudge');
-      var spreadActions     = document.getElementById('spread-actions');
-      var btnSpreadAgain    = document.getElementById('btn-spread-again');
-      var btnSpreadTake     = document.getElementById('btn-spread-take');
-      var spreadCopyConfirm = document.getElementById('spread-copy-confirm');
-
-      // Spread state
-      var spreadCards   = [null, null, null];   // axiom objects
-      var spreadRevealed = [false, false, false];
-      var spreadNextReveal = 0;                 // which card is next to flip (0,1,2)
-
-      // DOM refs for the 3 slots
-      var spreadSlots    = document.querySelectorAll('.spread-slot');
-      var spreadFlippers = [
-        document.querySelector('[data-spread-flipper="0"]'),
-        document.querySelector('[data-spread-flipper="1"]'),
-        document.querySelector('[data-spread-flipper="2"]')
-      ];
-      var spreadBacks = [
-        document.querySelector('[data-spread-back="0"]'),
-        document.querySelector('[data-spread-back="1"]'),
-        document.querySelector('[data-spread-back="2"]')
-      ];
 
       // ----------------------------------------------------------------
       // Phase-weighted random selection
@@ -1503,7 +1822,6 @@
 
         for (var i = 0; i < axioms.length; i++) {
           var ax = axioms[i];
-          // Skip already-drawn axioms
           var dominated = false;
           for (var j = 0; j < exclude.length; j++) {
             if (exclude[j] && exclude[j].id === ax.id && exclude[j].text === ax.text) {
@@ -1537,31 +1855,23 @@
       // ----------------------------------------------------------------
       function drawSpreadCards() {
         var drawn = [];
-
-        // Card 1: Phase I or Phase II
         var c1 = pickWeighted(['Phase I', 'Phase II'], drawn);
         drawn.push(c1);
-
-        // Card 2: Phase III
         var c2 = pickWeighted(['Phase III'], drawn);
         drawn.push(c2);
-
-        // Card 3: Phase IV or The Thirteen Laws
         var c3 = pickWeighted(['Phase IV', 'The Thirteen Laws'], drawn);
         drawn.push(c3);
-
         return drawn;
       }
 
       // ----------------------------------------------------------------
-      // Populate a spread card's front face
+      // Populate a spread card front face
       // ----------------------------------------------------------------
       function populateSpreadCard(index, axiom) {
         if (!axiom) return;
         var el = function (attr) {
           return document.querySelector('[data-spread-' + attr + '="' + index + '"]');
         };
-
         el('id').textContent    = axiom.id;
         el('phase').textContent = axiom.phase;
         el('step').textContent  = buildStepLine(axiom);
@@ -1578,18 +1888,18 @@
       }
 
       // ----------------------------------------------------------------
-      // Sync flipper height for a spread card
+      // Sync spread flipper height
       // ----------------------------------------------------------------
       function syncSpreadFlipperHeight(index) {
         var front = document.querySelector('[data-spread-front="' + index + '"]');
-        var flipper = spreadFlippers[index];
-        if (front && flipper) {
-          flipper.style.height = front.offsetHeight + 'px';
+        var fl = spreadFlippers[index];
+        if (front && fl) {
+          fl.style.height = front.offsetHeight + 'px';
         }
       }
 
       // ----------------------------------------------------------------
-      // Initialize spread (draw cards, reset state, set up slots)
+      // Initialize spread
       // ----------------------------------------------------------------
       function initSpread() {
         if (!axioms.length) {
@@ -1597,37 +1907,31 @@
           return;
         }
 
-        // Reset state
         spreadRevealed = [false, false, false];
         spreadNextReveal = 0;
         spreadNudge.classList.remove('is-visible');
         spreadActions.classList.remove('is-visible');
         spreadCopyConfirm.classList.remove('is-visible');
+        spreadCopyFallback.classList.remove('is-visible');
 
-        // Draw three cards
         spreadCards = drawSpreadCards();
 
-        // Populate all three fronts
         for (var i = 0; i < 3; i++) {
           populateSpreadCard(i, spreadCards[i]);
-
-          // Reset flipper state
           spreadFlippers[i].classList.remove('is-flipped');
           spreadFlippers[i].style.height = '';
 
-          // Reset back/front aria
           var back = document.querySelector('[data-spread-back="' + i + '"]');
           var front = document.querySelector('[data-spread-front="' + i + '"]');
           if (back) back.setAttribute('aria-hidden', 'false');
           if (front) front.setAttribute('aria-hidden', 'true');
         }
 
-        // Set slot states: first is active, rest are locked
         updateSlotStates();
       }
 
       // ----------------------------------------------------------------
-      // Update slot visual states based on reveal progress
+      // Update slot states
       // ----------------------------------------------------------------
       function updateSlotStates() {
         for (var i = 0; i < 3; i++) {
@@ -1655,19 +1959,16 @@
         var back = document.querySelector('[data-spread-back="' + index + '"]');
         var front = document.querySelector('[data-spread-front="' + index + '"]');
 
-        // Flip it
         flipperEl.classList.add('is-flipped');
         if (back) back.setAttribute('aria-hidden', 'true');
         if (front) front.setAttribute('aria-hidden', 'false');
         spreadRevealed[index] = true;
         spreadNextReveal = index + 1;
 
-        // Sync height and update states after flip transition
         setTimeout(function () {
           syncSpreadFlipperHeight(index);
           updateSlotStates();
 
-          // If all three revealed, show nudge + actions
           if (spreadRevealed[0] && spreadRevealed[1] && spreadRevealed[2]) {
             setTimeout(function () {
               spreadNudge.classList.add('is-visible');
@@ -1684,7 +1985,7 @@
         if (!spreadCards[0] || !spreadCards[1] || !spreadCards[2]) return '';
         var q = currentQuestion || '';
 
-        var prompt =
+        return (
           'You are working on: ' + q + '\n\n' +
           'Three principles for your situation:\n\n' +
           'DIVINATIO (Assessment):\n' +
@@ -1700,9 +2001,8 @@
           '- What does the first reveal about your situation?\n' +
           '- What does the second suggest about how to proceed?\n' +
           '- What does the third warn you to watch for?\n\n' +
-          'Begin.';
-
-        return prompt;
+          'Begin.'
+        );
       }
 
       // ----------------------------------------------------------------
@@ -1711,39 +2011,18 @@
       function spreadTakeWithYou() {
         var prompt = buildSpreadPrompt();
         if (!prompt) return;
-
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(prompt)
-            .then(function () {
-              console.log('Copied spread prompt to clipboard:\n\n' + prompt);
-              showSpreadCopyConfirm();
-            })
-            .catch(function () {
-              console.log('Spread prompt:\n\n' + prompt);
-              showSpreadCopyConfirm();
-            });
-        } else {
-          console.log('Spread prompt:\n\n' + prompt);
-          showSpreadCopyConfirm();
-        }
-      }
-
-      function showSpreadCopyConfirm() {
-        spreadCopyConfirm.classList.add('is-visible');
-        setTimeout(function () {
-          spreadCopyConfirm.classList.remove('is-visible');
-        }, 2400);
+        copyToClipboard(prompt, spreadCopyConfirm, spreadCopyFallback, spreadCopyFallbackText, btnSpreadTake);
       }
 
       // ----------------------------------------------------------------
-      // Spread: Reset
+      // Spread: Reset state
       // ----------------------------------------------------------------
-      function resetSpread() {
+      function resetSpreadState() {
         spreadActions.classList.remove('is-visible');
         spreadNudge.classList.remove('is-visible');
         spreadCopyConfirm.classList.remove('is-visible');
+        if (spreadCopyFallback) spreadCopyFallback.classList.remove('is-visible');
 
-        // Reset flippers
         for (var i = 0; i < 3; i++) {
           spreadFlippers[i].classList.remove('is-flipped');
           spreadFlippers[i].style.height = '';
@@ -1756,15 +2035,66 @@
         spreadCards = [null, null, null];
         spreadRevealed = [false, false, false];
         spreadNextReveal = 0;
+      }
 
-        // Re-init with new cards
+      // ----------------------------------------------------------------
+      // Spread: Draw again (re-draw within mode)
+      // ----------------------------------------------------------------
+      function resetSpread() {
+        resetSpreadState();
         setTimeout(function () {
           initSpread();
         }, 400);
       }
 
       // ----------------------------------------------------------------
-      // Spread event listeners — card click/keyboard
+      // Event listeners: Mode selector
+      // ----------------------------------------------------------------
+      for (var m = 0; m < modeOptions.length; m++) {
+        (function (opt) {
+          opt.addEventListener('click', function () {
+            selectMode(opt.getAttribute('data-mode'));
+          });
+          opt.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              selectMode(opt.getAttribute('data-mode'));
+            }
+          });
+        })(modeOptions[m]);
+      }
+
+      // ----------------------------------------------------------------
+      // Event listeners: Card
+      // ----------------------------------------------------------------
+      cardBack.addEventListener('click', draw);
+      cardBack.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          draw();
+        }
+      });
+
+      btnAgain.addEventListener('click', function () {
+        resetCard();
+      });
+
+      btnTake.addEventListener('click', takeWithYou);
+
+      btnStartOver.addEventListener('click', startOver);
+
+      // ----------------------------------------------------------------
+      // Event listeners: Question
+      // ----------------------------------------------------------------
+      questionForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        submitQuestion(questionInput.value);
+      });
+
+      questionReset.addEventListener('click', clearQuestion);
+
+      // ----------------------------------------------------------------
+      // Event listeners: Spread cards
       // ----------------------------------------------------------------
       for (var s = 0; s < spreadBacks.length; s++) {
         (function (idx) {
@@ -1782,11 +2112,7 @@
 
       btnSpreadAgain.addEventListener('click', resetSpread);
       btnSpreadTake.addEventListener('click', spreadTakeWithYou);
-
-      // Expose drawSpread for Task 6 mode selector to call
-      window.drawSpread = function () {
-        initSpread();
-      };
+      btnSpreadStartOver.addEventListener('click', startOver);
 
     })();
   </script>
