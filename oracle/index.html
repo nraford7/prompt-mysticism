@@ -565,6 +565,138 @@
     }
 
     /* ------------------------------------------------------------------ */
+    /* QUESTION FORM                                                        */
+    /* ------------------------------------------------------------------ */
+    #question-form {
+      max-width: 500px;
+      margin: 0 auto 3rem;
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+    }
+
+    .question-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--gold-dim);
+      color: var(--parchment);
+      font-family: var(--serif);
+      font-size: clamp(1rem, 2.2vw, 1.1rem);
+      font-style: italic;
+      line-height: 1.5;
+      padding: 0.4rem 0.2rem 0.5rem;
+      outline: none;
+      transition: border-color 0.25s ease;
+      width: 100%;
+    }
+
+    .question-input::placeholder {
+      color: var(--parchment-dim);
+      opacity: 0.45;
+      font-style: italic;
+    }
+
+    .question-input:focus {
+      border-bottom-color: var(--gold);
+    }
+
+    .question-submit {
+      background: transparent;
+      border: none;
+      color: var(--gold-dim);
+      font-family: var(--serif);
+      font-size: 1rem;
+      font-style: italic;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      padding: 0.4rem 0.2rem 0.5rem;
+      opacity: 0.65;
+      transition: opacity 0.22s ease, color 0.22s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .question-submit:hover {
+      opacity: 1;
+      color: var(--gold);
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* DISPLAYED QUESTION (after submit)                                   */
+    /* ------------------------------------------------------------------ */
+    #question-display {
+      max-width: 500px;
+      margin: 0 auto 2.5rem;
+      text-align: center;
+      display: none;
+    }
+
+    #question-display.is-visible {
+      display: block;
+    }
+
+    .question-text {
+      font-family: var(--serif);
+      font-size: clamp(0.9rem, 2vw, 1rem);
+      font-style: italic;
+      color: var(--gold-dim);
+      line-height: 1.6;
+      letter-spacing: 0.02em;
+    }
+
+    /* small "ask another" link */
+    .question-reset {
+      background: transparent;
+      border: none;
+      color: var(--parchment-dim);
+      font-family: var(--sans);
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      opacity: 0.35;
+      transition: opacity 0.2s ease;
+      padding: 0.3rem 0;
+      margin-top: 0.5rem;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .question-reset:hover {
+      opacity: 0.7;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* NUDGE TEXT (after reveal)                                           */
+    /* ------------------------------------------------------------------ */
+    #consultation-nudge {
+      max-width: 500px;
+      margin: 0 auto 1.5rem;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.4s ease 0.5s, transform 0.4s ease 0.5s;
+      pointer-events: none;
+    }
+
+    #consultation-nudge.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .nudge-text {
+      font-family: var(--serif);
+      font-size: 0.88rem;
+      font-style: italic;
+      color: var(--parchment-dim);
+      opacity: 0.6;
+      letter-spacing: 0.02em;
+    }
+
+    /* ------------------------------------------------------------------ */
     /* HIDDEN PLACEHOLDERS                                                  */
     /* ------------------------------------------------------------------ */
     #mode-selector,
@@ -661,8 +793,27 @@
         <h2 class="oracle-title">Draw an Axiom</h2>
       </div>
 
-      <!-- Mode selector — hidden until Task 4 -->
+      <!-- Mode selector — hidden until Task 6 -->
       <div id="mode-selector"></div>
+
+      <!-- Question form -->
+      <form id="question-form" autocomplete="off">
+        <input
+          type="text"
+          class="question-input"
+          id="question-input"
+          placeholder="What are you working on? What are you holding?"
+          maxlength="300"
+          aria-label="Enter your question"
+        />
+        <button type="submit" class="question-submit">Ask &rarr;</button>
+      </form>
+
+      <!-- Displayed question (after submit) -->
+      <div id="question-display">
+        <p class="question-text" id="question-text"></p>
+        <button class="question-reset" id="question-reset">ask another</button>
+      </div>
 
       <!-- Card display -->
       <div id="card-display">
@@ -695,6 +846,11 @@
           </div>
         </div>
 
+        <!-- Consultation nudge — appears after reveal when a question was asked -->
+        <div id="consultation-nudge">
+          <p class="nudge-text">How does this speak to what you're holding?</p>
+        </div>
+
         <!-- Post-draw actions -->
         <div class="card-actions" id="card-actions">
           <button class="btn-draw-again" id="btn-draw-again">Draw Again</button>
@@ -716,26 +872,34 @@
       // ----------------------------------------------------------------
       // State
       // ----------------------------------------------------------------
-      let axioms = [];
-      let currentAxiom = null;
-      let isFlipped = false;
+      var axioms = [];
+      var currentAxiom = null;
+      var isFlipped = false;
+      var currentQuestion = null;  // null = no question asked
 
       // ----------------------------------------------------------------
       // DOM refs
       // ----------------------------------------------------------------
-      const flipper    = document.getElementById('card-flipper');
-      const cardBack   = document.getElementById('card-back');
-      const cardFront  = document.getElementById('card-front');
-      const actions    = document.getElementById('card-actions');
-      const btnAgain   = document.getElementById('btn-draw-again');
-      const btnTake    = document.getElementById('btn-take-it');
-      const copyConfirm = document.getElementById('copy-confirm');
+      var flipper       = document.getElementById('card-flipper');
+      var cardBack      = document.getElementById('card-back');
+      var cardFront     = document.getElementById('card-front');
+      var actions       = document.getElementById('card-actions');
+      var btnAgain      = document.getElementById('btn-draw-again');
+      var btnTake       = document.getElementById('btn-take-it');
+      var copyConfirm   = document.getElementById('copy-confirm');
+      var nudge         = document.getElementById('consultation-nudge');
 
-      const elId    = document.getElementById('card-id');
-      const elPhase = document.getElementById('card-phase');
-      const elStep  = document.getElementById('card-step');
-      const elAxiom = document.getElementById('card-axiom');
-      const elLatin = document.getElementById('card-latin');
+      var elId    = document.getElementById('card-id');
+      var elPhase = document.getElementById('card-phase');
+      var elStep  = document.getElementById('card-step');
+      var elAxiom = document.getElementById('card-axiom');
+      var elLatin = document.getElementById('card-latin');
+
+      var questionForm    = document.getElementById('question-form');
+      var questionInput   = document.getElementById('question-input');
+      var questionDisplay = document.getElementById('question-display');
+      var questionText    = document.getElementById('question-text');
+      var questionReset   = document.getElementById('question-reset');
 
       // ----------------------------------------------------------------
       // Load axioms
@@ -765,53 +929,85 @@
         var parent = axiom.parent;
 
         if (type === 'corollary') {
-          // "Step 8: Charge and Direct (Potestas)"
           return parent + ': ' + step + (latin ? ' (' + latin + ')' : '');
         }
         if (type === 'core') {
-          // Could be a Step core or a Law core
           if (id && id.startsWith('Law')) {
-            // Law core — no latin
             return id + ': ' + step;
           }
-          // Step core
           return id + ': ' + step + (latin ? ' (' + latin + ')' : '');
         }
         if (type === 'sub-law') {
-          // "[parent]: [step name]"
           return parent + ': ' + step;
         }
-        // Fallback
         return (parent || id) + ': ' + step;
       }
 
-      function buildReflectionPrompt(axiom) {
-        var stepLine = buildStepLine(axiom);
-        // Determine source attribution
-        var attribution;
+      function buildAttribution(axiom) {
         if (axiom.type === 'core' && axiom.id && axiom.id.startsWith('Law')) {
-          attribution = '— ' + axiom.id + ': ' + axiom.step;
-        } else if (axiom.type === 'sub-law') {
-          attribution = '— ' + axiom.parent + ': ' + axiom.step;
-        } else {
-          var name = axiom.parent || axiom.id;
-          var label = name + ': ' + axiom.step;
-          if (axiom.latin) {
-            attribution = '— ' + label + ' (' + axiom.latin + ')';
-          } else {
-            attribution = '— ' + label;
-          }
+          return '— ' + axiom.id + ': ' + axiom.step;
         }
+        if (axiom.type === 'sub-law') {
+          return '— ' + axiom.parent + ': ' + axiom.step;
+        }
+        var name  = axiom.parent || axiom.id;
+        var label = name + ': ' + axiom.step;
+        if (axiom.latin) {
+          return '— ' + label + ' (' + axiom.latin + ')';
+        }
+        return '— ' + label;
+      }
 
+      function buildReflectionPrompt(axiom) {
+        var attribution = buildAttribution(axiom);
         return 'Today\'s axiom:\n\n"' + axiom.text + '"\n' + attribution + '\n\nSit with this before you begin. What does it illuminate?';
+      }
+
+      function buildConsultationPrompt(axiom, question) {
+        var stepLine = buildStepLine(axiom);
+        var attribution = buildAttribution(axiom);
+        return (
+          'You are working on: ' + question + '\n\n' +
+          'Consider this principle:\n' +
+          '"' + axiom.text + '"\n' +
+          attribution + '\n\n' +
+          'How does this principle reframe your approach?\n' +
+          'What does it reveal that you weren\'t seeing?\n' +
+          'Apply this lens to your situation and begin.'
+        );
+      }
+
+      // ----------------------------------------------------------------
+      // Question flow
+      // ----------------------------------------------------------------
+      function submitQuestion(q) {
+        q = q.trim();
+        if (!q) return;
+        currentQuestion = q;
+
+        // Hide form, show displayed question
+        questionForm.style.display = 'none';
+        questionText.textContent = '\u201C' + q + '\u201D';
+        questionDisplay.classList.add('is-visible');
+      }
+
+      function clearQuestion() {
+        currentQuestion = null;
+        questionForm.style.display = '';
+        questionInput.value = '';
+        questionDisplay.classList.remove('is-visible');
+        questionText.textContent = '';
+
+        // If card is revealed, also reset the card
+        if (isFlipped) {
+          reset();
+        }
       }
 
       // ----------------------------------------------------------------
       // Sync card-front height so card-back matches on flip
       // ----------------------------------------------------------------
       function syncFlipperHeight() {
-        // After revealing, set explicit height on flipper = front height
-        // so the scene doesn't collapse to 0 (front is absolute)
         var frontH = cardFront.offsetHeight;
         flipper.style.height = frontH + 'px';
       }
@@ -848,10 +1044,13 @@
         cardBack.setAttribute('aria-hidden', 'true');
         cardFront.setAttribute('aria-hidden', 'false');
 
-        // After transition, sync height and show actions
+        // After transition, sync height, show actions, show nudge if in consultation mode
         setTimeout(function () {
           syncFlipperHeight();
           actions.classList.add('is-visible');
+          if (currentQuestion) {
+            nudge.classList.add('is-visible');
+          }
         }, 580);
       }
 
@@ -861,6 +1060,7 @@
       function reset() {
         actions.classList.remove('is-visible');
         copyConfirm.classList.remove('is-visible');
+        nudge.classList.remove('is-visible');
 
         // Restore natural height for face-down state
         flipper.style.height = '';
@@ -877,9 +1077,13 @@
       // ----------------------------------------------------------------
       function takeWithYou() {
         if (!currentAxiom) return;
-        var prompt = buildReflectionPrompt(currentAxiom);
+        var prompt;
+        if (currentQuestion) {
+          prompt = buildConsultationPrompt(currentAxiom, currentQuestion);
+        } else {
+          prompt = buildReflectionPrompt(currentAxiom);
+        }
 
-        // Attempt clipboard copy; fall back to console
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(prompt)
             .then(function () {
@@ -887,11 +1091,11 @@
               showCopyConfirm();
             })
             .catch(function () {
-              console.log('Reflection prompt:\n\n' + prompt);
+              console.log('Prompt:\n\n' + prompt);
               showCopyConfirm();
             });
         } else {
-          console.log('Reflection prompt:\n\n' + prompt);
+          console.log('Prompt:\n\n' + prompt);
           showCopyConfirm();
         }
       }
@@ -915,8 +1119,19 @@
         }
       });
 
-      btnAgain.addEventListener('click', reset);
+      btnAgain.addEventListener('click', function () {
+        reset();
+        // If consultation mode, keep the question visible — just reset the card
+      });
+
       btnTake.addEventListener('click', takeWithYou);
+
+      questionForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        submitQuestion(questionInput.value);
+      });
+
+      questionReset.addEventListener('click', clearQuestion);
 
     })();
   </script>
