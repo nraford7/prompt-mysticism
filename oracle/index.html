@@ -812,9 +812,9 @@
     }
 
     /* ------------------------------------------------------------------ */
-    /* NUDGE TEXT (after reveal)                                           */
+    /* REFLECTION AREA (after reveal)                                      */
     /* ------------------------------------------------------------------ */
-    #consultation-nudge {
+    #reflection-area, #spread-reflection-area {
       max-width: 500px;
       margin: 0 auto 1.5rem;
       text-align: center;
@@ -824,20 +824,40 @@
       pointer-events: none;
     }
 
-    #consultation-nudge.is-visible {
+    #reflection-area.is-visible, #spread-reflection-area.is-visible {
       opacity: 1;
       transform: translateY(0);
       pointer-events: auto;
     }
 
-    .nudge-text {
+    .reflection-question {
       font-family: var(--serif);
       font-size: 0.88rem;
       font-style: italic;
       color: var(--parchment-dim);
-      opacity: 0.6;
+      text-align: center;
+      opacity: 0.7;
+      margin-bottom: 1rem;
       letter-spacing: 0.02em;
     }
+
+    .reflection-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--crimson);
+      color: var(--parchment);
+      font-family: var(--serif);
+      font-size: 1rem;
+      font-style: italic;
+      line-height: 1.7;
+      padding: 0.5rem 0.2rem;
+      resize: none;
+      outline: none;
+      transition: border-color 0.25s ease;
+    }
+    .reflection-input:focus { border-bottom-color: var(--gold); }
+    .reflection-input::placeholder { color: var(--parchment-dim); opacity: 0.35; }
 
     /* ------------------------------------------------------------------ */
     /* THREE-CARD SPREAD                                                   */
@@ -864,27 +884,29 @@
 
     /* Position label above card */
     .spread-label {
+      text-align: center;
+      margin-bottom: 0.75rem;
+      line-height: 1.5;
+    }
+
+    .spread-question {
+      display: block;
+      font-family: var(--serif);
+      font-size: 0.88rem;
+      color: var(--parchment);
+      letter-spacing: 0.02em;
+      margin-bottom: 0.2rem;
+    }
+
+    .spread-latin-label {
+      display: block;
       font-family: var(--serif-sc);
-      font-size: 0.6rem;
+      font-size: 0.58rem;
       font-variant: small-caps;
       letter-spacing: 0.28em;
       text-transform: lowercase;
       color: var(--gold-dim);
-      text-align: center;
-      margin-bottom: 0.75rem;
       opacity: 0.7;
-      line-height: 1.5;
-    }
-
-    .spread-label strong {
-      display: block;
-      font-family: var(--sans);
-      font-size: 0.7rem;
-      font-weight: 400;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 0.15rem;
     }
 
     /* Spread card scene — smaller perspective for side-by-side */
@@ -1003,22 +1025,7 @@
       pointer-events: auto;
     }
 
-    /* Spread nudge + actions */
-    #spread-nudge {
-      max-width: 600px;
-      margin: 0 auto 1.5rem;
-      text-align: center;
-      opacity: 0;
-      transform: translateY(8px);
-      transition: opacity 0.4s ease 0.3s, transform 0.4s ease 0.3s;
-      pointer-events: none;
-    }
-
-    #spread-nudge.is-visible {
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events: auto;
-    }
+    /* Spread actions */
 
     .spread-actions {
       display: flex;
@@ -1385,6 +1392,26 @@
     }
 
     /* ------------------------------------------------------------------ */
+    /* TABLE PROPS — decorative edge objects                                */
+    /* ------------------------------------------------------------------ */
+    .table-candle {
+      width: clamp(80px, 12vw, 140px);
+      height: auto;
+      margin: 1.5rem auto 2.5rem;
+      display: block;
+      opacity: 0.85;
+      filter: drop-shadow(0 0 20px rgba(210, 160, 60, 0.3));
+      pointer-events: none;
+    }
+
+    .table-prop {
+      position: absolute;
+      pointer-events: none;
+      z-index: 0;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    }
+
+    /* ------------------------------------------------------------------ */
     /* RESPONSIVE                                                           */
     /* ------------------------------------------------------------------ */
     @media (max-width: 600px) {
@@ -1435,6 +1462,10 @@
         max-width: 100%;
         width: 100%;
       }
+
+      .table-prop {
+        display: none;
+      }
     }
   </style>
 </head>
@@ -1470,6 +1501,9 @@
   <section id="intro">
 
     <span class="intro-ornament">&mdash;&nbsp;&nbsp;&mdash;&nbsp;&nbsp;&mdash;</span>
+
+    <img src="https://i.pinimg.com/originals/db/5a/45/db5a4595bac1960e5b7cc0a35544140b.gif"
+      alt="" class="table-candle" loading="lazy">
 
     <div class="intro-story">
       <p>
@@ -1573,6 +1607,18 @@
       <span class="cta-arrow">&#8595;</span>
     </div>
 
+    <!-- Table props — intro section -->
+    <img src="https://castiching.com/images/coin-yin.png" alt="" class="table-prop"
+      style="left:-30px;top:20%;width:70px;transform:rotate(-15deg);opacity:0.75" loading="lazy">
+    <img src="https://castiching.com/images/coin-yin.png" alt="" class="table-prop"
+      style="left:-5px;top:23%;width:55px;transform:rotate(25deg);opacity:0.65" loading="lazy">
+    <img src="https://castiching.com/images/coin-yin.png" alt="" class="table-prop"
+      style="left:-40px;top:26%;width:60px;transform:rotate(-5deg);opacity:0.7" loading="lazy">
+    <img src="https://pngimg.com/uploads/key/key_PNG103656.png" alt="" class="table-prop"
+      style="right:-25px;top:52%;width:90px;transform:rotate(15deg);opacity:0.6" loading="lazy">
+    <img src="https://pngimg.com/uploads/ruby/ruby_PNG26.png" alt="" class="table-prop"
+      style="left:-35px;top:78%;width:80px;transform:rotate(-8deg);opacity:0.55" loading="lazy">
+
   </section>
 
   <!-- ============================================================ -->
@@ -1654,9 +1700,12 @@
           </div>
         </div>
 
-        <!-- Consultation nudge — appears after reveal when a question was asked -->
-        <div id="consultation-nudge">
-          <p class="nudge-text">How does this speak to what you're holding?</p>
+        <!-- Reflection area — appears after card reveal -->
+        <div id="reflection-area">
+          <p class="reflection-question" id="reflection-question"></p>
+          <textarea class="reflection-input" id="reflection-input"
+            placeholder="Write what comes to mind..."
+            rows="3" maxlength="1000"></textarea>
         </div>
 
         <!-- Post-draw actions -->
@@ -1679,8 +1728,8 @@
           <!-- Card 1: DIVINATIO -->
           <div class="spread-slot is-active" data-slot="0">
             <div class="spread-label">
-              <strong>Divinatio</strong>
-              What is the situation?
+              <span class="spread-question">What is the situation?</span>
+              <span class="spread-latin-label">Divinatio</span>
             </div>
             <div class="spread-card-scene">
               <div class="spread-card-flipper" data-spread-flipper="0">
@@ -1707,11 +1756,11 @@
             </div>
           </div>
 
-          <!-- Card 2: POTESTAS -->
+          <!-- Card 2: JUDICIUM -->
           <div class="spread-slot is-locked" data-slot="1">
             <div class="spread-label">
-              <strong>Potestas</strong>
-              What is the working?
+              <span class="spread-question">What must you discern?</span>
+              <span class="spread-latin-label">Judicium</span>
             </div>
             <div class="spread-card-scene">
               <div class="spread-card-flipper" data-spread-flipper="1">
@@ -1738,11 +1787,11 @@
             </div>
           </div>
 
-          <!-- Card 3: JUDICIUM -->
+          <!-- Card 3: POTESTAS -->
           <div class="spread-slot is-locked" data-slot="2">
             <div class="spread-label">
-              <strong>Judicium</strong>
-              What should you watch for?
+              <span class="spread-question">What must you do?</span>
+              <span class="spread-latin-label">Potestas</span>
             </div>
             <div class="spread-card-scene">
               <div class="spread-card-flipper" data-spread-flipper="2">
@@ -1771,9 +1820,12 @@
 
         </div>
 
-        <!-- Spread nudge — appears after all three revealed -->
-        <div id="spread-nudge">
-          <p class="nudge-text">Read them together. What story do they tell about your question?</p>
+        <!-- Spread reflection area — appears after all three revealed -->
+        <div id="spread-reflection-area">
+          <p class="reflection-question" id="spread-reflection-question"></p>
+          <textarea class="reflection-input" id="spread-reflection-input"
+            placeholder="Write what comes to mind..."
+            rows="3" maxlength="1000"></textarea>
         </div>
 
         <!-- Spread actions -->
@@ -1793,6 +1845,15 @@
       <div id="prompt-area"></div>
 
     </div>
+
+    <!-- Table props — oracle section -->
+    <img src="https://castiching.com/images/coin-yin.png" alt="" class="table-prop"
+      style="right:-20px;top:8%;width:65px;transform:rotate(30deg);opacity:0.6" loading="lazy">
+    <img src="https://pngimg.com/uploads/moth/moth_PNG48.png" alt="" class="table-prop"
+      style="left:-30px;top:45%;width:75px;transform:rotate(10deg);opacity:0.5" loading="lazy">
+    <img src="https://pngimg.com/uploads/feather/feather_PNG12952.png" alt="" class="table-prop"
+      style="right:-35px;top:75%;width:70px;transform:rotate(-12deg);opacity:0.55" loading="lazy">
+
   </section>
 
   <script>
@@ -1828,7 +1889,9 @@
       var copyConfirm   = document.getElementById('copy-confirm');
       var copyFallback  = document.getElementById('copy-fallback');
       var copyFallbackText = document.getElementById('copy-fallback-text');
-      var nudge         = document.getElementById('consultation-nudge');
+      var reflectionArea     = document.getElementById('reflection-area');
+      var reflectionQuestion = document.getElementById('reflection-question');
+      var reflectionInput    = document.getElementById('reflection-input');
       var btnStartOver  = document.getElementById('btn-start-over');
 
       var elId    = document.getElementById('card-id');
@@ -1845,7 +1908,9 @@
 
       // Spread DOM refs
       var spreadDisplay     = document.getElementById('spread-display');
-      var spreadNudge       = document.getElementById('spread-nudge');
+      var spreadReflectionArea     = document.getElementById('spread-reflection-area');
+      var spreadReflectionQuestion = document.getElementById('spread-reflection-question');
+      var spreadReflectionInput    = document.getElementById('spread-reflection-input');
       var spreadActions     = document.getElementById('spread-actions');
       var btnSpreadAgain    = document.getElementById('btn-spread-again');
       var btnSpreadTake     = document.getElementById('btn-spread-take');
@@ -2050,22 +2115,31 @@
         return '\u2014 ' + label;
       }
 
-      function buildReflectionPrompt(axiom) {
+      function buildReflectionPrompt(axiom, reflection) {
         var attribution = buildAttribution(axiom);
-        return 'Today\'s axiom:\n\n"' + axiom.text + '"\n' + attribution + '\n\nSit with this before you begin. What does it illuminate?';
+        var prompt = 'Today\'s axiom:\n\n"' + axiom.text + '"\n' + attribution + '\n\n';
+        if (reflection) {
+          prompt += 'Your reflection:\n' + reflection + '\n\n';
+        }
+        prompt += 'Sit with this before you begin. What does it illuminate?';
+        return prompt;
       }
 
-      function buildConsultationPrompt(axiom, question) {
+      function buildConsultationPrompt(axiom, question, reflection) {
         var attribution = buildAttribution(axiom);
-        return (
+        var prompt = (
           'You are working on: ' + question + '\n\n' +
           'Consider this principle:\n' +
           '"' + axiom.text + '"\n' +
-          attribution + '\n\n' +
-          'How does this principle reframe your approach?\n' +
-          'What does it reveal that you weren\'t seeing?\n' +
-          'Apply this lens to your situation and begin.'
+          attribution + '\n\n'
         );
+        if (reflection) {
+          prompt += 'Your reflection:\n' + reflection + '\n\n';
+        }
+        prompt += 'How does this principle reframe your approach?\n' +
+          'What does it reveal that you weren\'t seeing?\n' +
+          'Apply this lens to your situation and begin.';
+        return prompt;
       }
 
       // ----------------------------------------------------------------
@@ -2161,13 +2235,14 @@
         cardBack.setAttribute('aria-hidden', 'true');
         cardFront.setAttribute('aria-hidden', 'false');
 
-        // After transition, sync height, show actions, show nudge if consultation
+        // After transition, sync height, show reflection + actions
         setTimeout(function () {
           syncFlipperHeight();
+          reflectionQuestion.textContent = currentQuestion
+            ? 'How does this reframe your question?'
+            : 'What does this illuminate?';
+          reflectionArea.classList.add('is-visible');
           actions.classList.add('is-visible');
-          if (currentQuestion) {
-            nudge.classList.add('is-visible');
-          }
         }, 580);
       }
 
@@ -2178,7 +2253,8 @@
         actions.classList.remove('is-visible');
         copyConfirm.classList.remove('is-visible');
         copyFallback.classList.remove('is-visible');
-        nudge.classList.remove('is-visible');
+        reflectionArea.classList.remove('is-visible');
+        reflectionInput.value = '';
         flipper.style.height = '';
         isFlipped = false;
         flipper.classList.remove('is-flipped');
@@ -2232,11 +2308,12 @@
       // ----------------------------------------------------------------
       function takeWithYou() {
         if (!currentAxiom) return;
+        var reflection = reflectionInput.value.trim() || null;
         var prompt;
         if (currentQuestion) {
-          prompt = buildConsultationPrompt(currentAxiom, currentQuestion);
+          prompt = buildConsultationPrompt(currentAxiom, currentQuestion, reflection);
         } else {
-          prompt = buildReflectionPrompt(currentAxiom);
+          prompt = buildReflectionPrompt(currentAxiom, reflection);
         }
         copyToClipboard(prompt, copyConfirm, copyFallback, copyFallbackText, btnTake);
       }
@@ -2285,9 +2362,9 @@
         var drawn = [];
         var c1 = pickWeighted(['Phase I', 'Phase II'], drawn);
         drawn.push(c1);
-        var c2 = pickWeighted(['Phase III'], drawn);
+        var c2 = pickWeighted(['Phase IV', 'The Thirteen Laws'], drawn);
         drawn.push(c2);
-        var c3 = pickWeighted(['Phase IV', 'The Thirteen Laws'], drawn);
+        var c3 = pickWeighted(['Phase III'], drawn);
         drawn.push(c3);
         return drawn;
       }
@@ -2337,7 +2414,8 @@
 
         spreadRevealed = [false, false, false];
         spreadNextReveal = 0;
-        spreadNudge.classList.remove('is-visible');
+        spreadReflectionArea.classList.remove('is-visible');
+        spreadReflectionInput.value = '';
         spreadActions.classList.remove('is-visible');
         spreadCopyConfirm.classList.remove('is-visible');
         spreadCopyFallback.classList.remove('is-visible');
@@ -2399,7 +2477,8 @@
 
           if (spreadRevealed[0] && spreadRevealed[1] && spreadRevealed[2]) {
             setTimeout(function () {
-              spreadNudge.classList.add('is-visible');
+              spreadReflectionQuestion.textContent = 'What does the first card reveal? What does the second warn you not to ignore? What does the third demand you do?';
+              spreadReflectionArea.classList.add('is-visible');
               spreadActions.classList.add('is-visible');
             }, 200);
           }
@@ -2409,35 +2488,42 @@
       // ----------------------------------------------------------------
       // Build spread prompt
       // ----------------------------------------------------------------
-      function buildSpreadPrompt() {
+      function buildSpreadPrompt(reflection) {
         if (!spreadCards[0] || !spreadCards[1] || !spreadCards[2]) return '';
         var q = currentQuestion || '';
 
-        return (
+        var prompt = (
           'You are working on: ' + q + '\n\n' +
           'Three principles for your situation:\n\n' +
           'DIVINATIO (Assessment):\n' +
           '"' + spreadCards[0].text + '"\n' +
           buildAttribution(spreadCards[0]) + '\n\n' +
-          'POTESTAS (Action):\n' +
+          'JUDICIUM (Judgment):\n' +
           '"' + spreadCards[1].text + '"\n' +
           buildAttribution(spreadCards[1]) + '\n\n' +
-          'JUDICIUM (Integration):\n' +
+          'POTESTAS (Action):\n' +
           '"' + spreadCards[2].text + '"\n' +
           buildAttribution(spreadCards[2]) + '\n\n' +
           'Use these three principles as a framework:\n' +
           '- What does the first reveal about your situation?\n' +
-          '- What does the second suggest about how to proceed?\n' +
-          '- What does the third warn you to watch for?\n\n' +
-          'Begin.'
+          '- What does the second warn you not to ignore?\n' +
+          '- What does the third demand you do?\n\n'
         );
+
+        if (reflection) {
+          prompt += 'Your reflection:\n' + reflection + '\n\n';
+        }
+
+        prompt += 'Begin.';
+        return prompt;
       }
 
       // ----------------------------------------------------------------
       // Spread: Take This With You
       // ----------------------------------------------------------------
       function spreadTakeWithYou() {
-        var prompt = buildSpreadPrompt();
+        var reflection = spreadReflectionInput.value.trim() || null;
+        var prompt = buildSpreadPrompt(reflection);
         if (!prompt) return;
         copyToClipboard(prompt, spreadCopyConfirm, spreadCopyFallback, spreadCopyFallbackText, btnSpreadTake);
       }
@@ -2447,7 +2533,8 @@
       // ----------------------------------------------------------------
       function resetSpreadState() {
         spreadActions.classList.remove('is-visible');
-        spreadNudge.classList.remove('is-visible');
+        spreadReflectionArea.classList.remove('is-visible');
+        spreadReflectionInput.value = '';
         spreadCopyConfirm.classList.remove('is-visible');
         if (spreadCopyFallback) spreadCopyFallback.classList.remove('is-visible');
 
@@ -2471,7 +2558,8 @@
       function resetSpread() {
         // Flip all cards back in place
         spreadActions.classList.remove('is-visible');
-        spreadNudge.classList.remove('is-visible');
+        spreadReflectionArea.classList.remove('is-visible');
+        spreadReflectionInput.value = '';
         spreadCopyConfirm.classList.remove('is-visible');
         if (spreadCopyFallback) spreadCopyFallback.classList.remove('is-visible');
 
@@ -2530,7 +2618,8 @@
       btnAgain.addEventListener('click', function () {
         // Flip back in place — card stays visible
         actions.classList.remove('is-visible');
-        nudge.classList.remove('is-visible');
+        reflectionArea.classList.remove('is-visible');
+        reflectionInput.value = '';
         copyConfirm.classList.remove('is-visible');
         copyFallback.classList.remove('is-visible');
         isFlipped = false;
