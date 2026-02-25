@@ -1171,6 +1171,94 @@
     }
 
     /* ------------------------------------------------------------------ */
+    /* VELVET CURTAIN                                                       */
+    /* ------------------------------------------------------------------ */
+    #curtain-container {
+      height: 200vh;
+      position: relative;
+      z-index: 100;
+    }
+
+    #curtain-sticky {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      width: 100%;
+      overflow: hidden;
+      display: flex;
+      z-index: 100;
+    }
+
+    .curtain-panel {
+      width: 51%;
+      height: 100%;
+      position: relative;
+      will-change: transform;
+      /* Deep crimson base with vertical drape folds */
+      background:
+        repeating-linear-gradient(
+          90deg,
+          rgba(140, 20, 30, 0.0) 0px,
+          rgba(140, 20, 30, 0.15) 12px,
+          rgba(60, 8, 14, 0.3) 24px,
+          rgba(100, 15, 22, 0.1) 36px,
+          rgba(140, 20, 30, 0.0) 48px,
+          rgba(80, 12, 18, 0.25) 60px,
+          rgba(140, 20, 30, 0.05) 72px
+        ),
+        linear-gradient(180deg, #4a0e16 0%, #6b1520 30%, #5a1018 70%, #3d0a10 100%);
+      border-bottom: 2px solid rgba(212, 160, 64, 0.3);
+    }
+
+    .curtain-left {
+      transform-origin: left center;
+      box-shadow: inset -8px 0 20px rgba(10, 2, 4, 0.6);
+    }
+
+    .curtain-right {
+      transform-origin: right center;
+      box-shadow: inset 8px 0 20px rgba(10, 2, 4, 0.6);
+      margin-left: -2%;
+    }
+
+    /* Gold fringe at bottom */
+    .curtain-panel::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(
+        180deg,
+        rgba(212, 160, 64, 0.4) 0%,
+        rgba(212, 160, 64, 0.15) 50%,
+        rgba(138, 94, 32, 0.3) 100%
+      );
+    }
+
+    /* Center seam gold accent */
+    .curtain-left::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 1px;
+      height: 100%;
+      background: linear-gradient(180deg, transparent 5%, rgba(212, 160, 64, 0.2) 20%, rgba(212, 160, 64, 0.3) 50%, rgba(212, 160, 64, 0.2) 80%, transparent 95%);
+    }
+
+    .curtain-right::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1px;
+      height: 100%;
+      background: linear-gradient(180deg, transparent 5%, rgba(212, 160, 64, 0.2) 20%, rgba(212, 160, 64, 0.3) 50%, rgba(212, 160, 64, 0.2) 80%, transparent 95%);
+    }
+
+    /* ------------------------------------------------------------------ */
     /* RESPONSIVE                                                           */
     /* ------------------------------------------------------------------ */
     @media (max-width: 600px) {
@@ -1232,6 +1320,16 @@
   <div class="smoke-wisp smoke-wisp-1" aria-hidden="true"></div>
   <div class="smoke-wisp smoke-wisp-2" aria-hidden="true"></div>
   <div class="smoke-wisp smoke-wisp-3" aria-hidden="true"></div>
+
+  <!-- ============================================================ -->
+  <!-- VELVET CURTAIN                                                -->
+  <!-- ============================================================ -->
+  <div id="curtain-container">
+    <div id="curtain-sticky">
+      <div class="curtain-panel curtain-left"></div>
+      <div class="curtain-panel curtain-right"></div>
+    </div>
+  </div>
 
   <!-- ============================================================ -->
   <!-- INTRO                                                         -->
@@ -1581,6 +1679,35 @@
       ];
 
       // ----------------------------------------------------------------
+      // Curtain scroll animation
+      // ----------------------------------------------------------------
+      var curtainContainer = document.getElementById('curtain-container');
+      var curtainLeft  = document.querySelector('.curtain-left');
+      var curtainRight = document.querySelector('.curtain-right');
+
+      function updateCurtain() {
+        var rect = curtainContainer.getBoundingClientRect();
+        var scrollRange = curtainContainer.offsetHeight - window.innerHeight;
+        var scrolled = -rect.top;
+        var progress = Math.max(0, Math.min(1, scrolled / scrollRange));
+
+        curtainLeft.style.transform  = 'translateX(' + (-progress * 105) + '%)';
+        curtainRight.style.transform = 'translateX(' + (progress * 105) + '%)';
+      }
+
+      var curtainTicking = false;
+      window.addEventListener('scroll', function () {
+        if (!curtainTicking) {
+          requestAnimationFrame(function () {
+            updateCurtain();
+            curtainTicking = false;
+          });
+          curtainTicking = true;
+        }
+      }, { passive: true });
+      updateCurtain();
+
+      // ----------------------------------------------------------------
       // Mode titles
       // ----------------------------------------------------------------
       var modeTitles = {
@@ -1652,9 +1779,10 @@
           hideAllSections();
 
           if (mode === 'draw') {
-            // No question — show card directly
+            // No question — show card directly, auto-flip after delay
             resetCard();
             showSection(cardDisplay);
+            setTimeout(draw, 500);
           } else if (mode === 'consult') {
             // Show question form
             showSection(questionForm);
@@ -1763,13 +1891,17 @@
           showSection(questionDisplay);
 
           if (currentMode === 'consult') {
-            // Show card for consultation
+            // Show card for consultation, auto-flip after delay
             resetCard();
             showSection(cardDisplay);
+            setTimeout(draw, 500);
           } else if (currentMode === 'spread') {
-            // Show spread
+            // Show spread, auto-flip sequentially
             showSection(spreadDisplay);
             initSpread();
+            setTimeout(function () { revealSpreadCard(0); }, 500);
+            setTimeout(function () { revealSpreadCard(1); }, 1100);
+            setTimeout(function () { revealSpreadCard(2); }, 1700);
           }
         }, 300);
       }
@@ -1809,7 +1941,6 @@
       // Draw
       // ----------------------------------------------------------------
       function draw() {
-        if (isFlipped) return;
         if (!axioms.length) {
           console.warn('Axioms not loaded yet.');
           return;
@@ -2145,10 +2276,34 @@
       // Spread: Draw again (re-draw within mode)
       // ----------------------------------------------------------------
       function resetSpread() {
-        resetSpreadState();
+        // Flip all cards back in place
+        spreadActions.classList.remove('is-visible');
+        spreadNudge.classList.remove('is-visible');
+        spreadCopyConfirm.classList.remove('is-visible');
+        if (spreadCopyFallback) spreadCopyFallback.classList.remove('is-visible');
+
+        for (var i = 0; i < 3; i++) {
+          spreadFlippers[i].classList.remove('is-flipped');
+          spreadFlippers[i].style.height = '';
+          var back = document.querySelector('[data-spread-back="' + i + '"]');
+          var front = document.querySelector('[data-spread-front="' + i + '"]');
+          if (back) back.setAttribute('aria-hidden', 'false');
+          if (front) front.setAttribute('aria-hidden', 'true');
+        }
+        spreadRevealed = [false, false, false];
+        spreadNextReveal = 0;
+        updateSlotStates();
+
+        // After flip-back animation, draw new cards and auto-flip sequentially
         setTimeout(function () {
-          initSpread();
-        }, 400);
+          spreadCards = drawSpreadCards();
+          for (var i = 0; i < 3; i++) {
+            populateSpreadCard(i, spreadCards[i]);
+          }
+          setTimeout(function () { revealSpreadCard(0); }, 100);
+          setTimeout(function () { revealSpreadCard(1); }, 700);
+          setTimeout(function () { revealSpreadCard(2); }, 1300);
+        }, 500);
       }
 
       // ----------------------------------------------------------------
@@ -2180,7 +2335,18 @@
       });
 
       btnAgain.addEventListener('click', function () {
-        resetCard();
+        // Flip back in place — card stays visible
+        actions.classList.remove('is-visible');
+        nudge.classList.remove('is-visible');
+        copyConfirm.classList.remove('is-visible');
+        copyFallback.classList.remove('is-visible');
+        isFlipped = false;
+        flipper.classList.remove('is-flipped');
+        flipper.style.height = '';
+        cardBack.setAttribute('aria-hidden', 'false');
+        cardFront.setAttribute('aria-hidden', 'true');
+        // Card-back is now visible — clicking it or waiting triggers new draw
+        setTimeout(draw, 500);
       });
 
       btnTake.addEventListener('click', takeWithYou);
