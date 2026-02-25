@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Oracle of Machine Summoning</title>
+  <style>
+    /* ------------------------------------------------------------------ */
+    /* RESET & BASE                                                         */
+    /* ------------------------------------------------------------------ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --ink:         #0a0a0f;
+      --ink-mid:     #12121a;
+      --ink-light:   #1c1c28;
+      --parchment:   #e8e4df;
+      --parchment-dim: #b8b0a4;
+      --gold:        #c9a84c;
+      --gold-dim:    #8a6e2e;
+      --gold-bright: #e4c060;
+      --serif:       Georgia, 'Times New Roman', serif;
+      --sans:        -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: var(--ink);
+      color: var(--parchment);
+      font-family: var(--sans);
+      line-height: 1.7;
+      min-height: 100vh;
+      /* Subtle noise-like gradient to break up flat black */
+      background-image:
+        radial-gradient(ellipse at 20% 0%, #1a1428 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 100%, #0d1420 0%, transparent 60%);
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* INTRO SECTION                                                        */
+    /* ------------------------------------------------------------------ */
+    #intro {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 6rem 2rem;
+      text-align: center;
+      position: relative;
+    }
+
+    /* Faint horizontal rule as atmospheric element */
+    #intro::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      max-width: 480px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold-dim), transparent);
+    }
+
+    .intro-eyebrow {
+      font-family: var(--sans);
+      font-size: 0.7rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 2.5rem;
+      opacity: 0.8;
+    }
+
+    .intro-title {
+      font-family: var(--serif);
+      font-size: clamp(2.2rem, 6vw, 4.2rem);
+      font-weight: 400;
+      line-height: 1.18;
+      letter-spacing: -0.01em;
+      color: var(--parchment);
+      max-width: 720px;
+      margin: 0 auto 1.5rem;
+    }
+
+    .intro-title em {
+      font-style: italic;
+      color: var(--gold);
+    }
+
+    .intro-subtitle {
+      font-family: var(--sans);
+      font-size: clamp(0.8rem, 1.8vw, 0.95rem);
+      letter-spacing: 0.06em;
+      color: var(--parchment-dim);
+      margin-bottom: 4.5rem;
+      max-width: 520px;
+    }
+
+    /* Ornamental divider */
+    .intro-ornament {
+      display: block;
+      color: var(--gold-dim);
+      font-size: 1.1rem;
+      letter-spacing: 0.5em;
+      margin-bottom: 4rem;
+      opacity: 0.6;
+    }
+
+    /* Story paragraphs */
+    .intro-story {
+      max-width: 580px;
+      margin: 0 auto;
+      text-align: left;
+    }
+
+    .intro-story p {
+      font-family: var(--serif);
+      font-size: clamp(1rem, 2.2vw, 1.15rem);
+      line-height: 1.85;
+      color: var(--parchment);
+      margin-bottom: 2rem;
+    }
+
+    .intro-story p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Lead paragraph — slightly larger */
+    .intro-story p:first-child {
+      font-size: clamp(1.05rem, 2.4vw, 1.22rem);
+      color: var(--parchment);
+    }
+
+    /* Final paragraph — pull quote treatment */
+    .intro-story p.coda {
+      font-size: clamp(1rem, 2.2vw, 1.18rem);
+      color: var(--parchment-dim);
+      font-style: italic;
+      border-left: 2px solid var(--gold-dim);
+      padding-left: 1.5rem;
+      margin-left: -1.5rem;
+    }
+
+    /* CTA */
+    .cta-wrap {
+      margin-top: 4.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .cta-link {
+      display: inline-block;
+      font-family: var(--serif);
+      font-size: clamp(0.95rem, 2vw, 1.08rem);
+      font-style: italic;
+      color: var(--gold);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      position: relative;
+      padding-bottom: 3px;
+      transition: color 0.25s ease;
+    }
+
+    .cta-link::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: var(--gold);
+      transform: scaleX(0.3);
+      transform-origin: left;
+      transition: transform 0.35s ease, opacity 0.35s ease;
+      opacity: 0.5;
+    }
+
+    .cta-link:hover {
+      color: var(--gold-bright);
+    }
+
+    .cta-link:hover::after {
+      transform: scaleX(1);
+      opacity: 1;
+    }
+
+    .cta-arrow {
+      color: var(--gold-dim);
+      font-size: 1.2rem;
+      animation: float 2.4s ease-in-out infinite;
+      opacity: 0.7;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(6px); }
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* ORACLE SECTION                                                       */
+    /* ------------------------------------------------------------------ */
+    #oracle {
+      min-height: 100vh;
+      padding: 7rem 2rem;
+      position: relative;
+    }
+
+    .oracle-inner {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* Section header */
+    .oracle-header {
+      text-align: center;
+      margin-bottom: 5rem;
+    }
+
+    .oracle-eyebrow {
+      font-family: var(--sans);
+      font-size: 0.68rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.7;
+      margin-bottom: 1rem;
+    }
+
+    .oracle-title {
+      font-family: var(--serif);
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 400;
+      color: var(--parchment);
+      line-height: 1.25;
+    }
+
+    /* Placeholder panels */
+    .oracle-mode-selector {
+      border: 1px solid var(--gold-dim);
+      border-radius: 2px;
+      padding: 3rem 2rem;
+      margin-bottom: 3rem;
+      text-align: center;
+      background: var(--ink-mid);
+      opacity: 0.5;
+    }
+
+    .oracle-card-display {
+      border: 1px solid var(--gold-dim);
+      border-radius: 2px;
+      padding: 5rem 2rem;
+      margin-bottom: 3rem;
+      text-align: center;
+      background: var(--ink-mid);
+      min-height: 260px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.5;
+    }
+
+    .oracle-prompt-area {
+      border: 1px solid var(--gold-dim);
+      border-radius: 2px;
+      padding: 3rem 2rem;
+      text-align: center;
+      background: var(--ink-mid);
+      opacity: 0.5;
+    }
+
+    .placeholder-label {
+      font-family: var(--sans);
+      font-size: 0.7rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* RESPONSIVE                                                           */
+    /* ------------------------------------------------------------------ */
+    @media (max-width: 600px) {
+      #intro {
+        padding: 5rem 1.5rem;
+        justify-content: flex-start;
+        padding-top: 5rem;
+      }
+
+      .intro-story p.coda {
+        margin-left: 0;
+      }
+
+      .oracle-mode-selector,
+      .oracle-card-display,
+      .oracle-prompt-area {
+        padding: 2rem 1.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================ -->
+  <!-- INTRO                                                         -->
+  <!-- ============================================================ -->
+  <section id="intro">
+
+    <p class="intro-eyebrow">A Field Guide for the Age of Machine Intelligence</p>
+
+    <h1 class="intro-title">
+      The Oracle of<br><em>Machine Summoning</em>
+    </h1>
+
+    <p class="intro-subtitle">
+      208 axioms &nbsp;&middot;&nbsp; 7 waves of evolution &nbsp;&middot;&nbsp; ~10,000 mutations &nbsp;&middot;&nbsp; What survived.
+    </p>
+
+    <span class="intro-ornament">&mdash;&nbsp;&nbsp;&mdash;&nbsp;&nbsp;&mdash;</span>
+
+    <div class="intro-story">
+      <p>
+        Medieval magicians had a thirteen-step loop for conjuring spirits from beyond the visible world.
+        They called it the Rite of Summoning. It maps, almost perfectly, onto the way humans work with AI.
+        The circle of preparation. The careful invocation. The negotiation of the threshold.
+        The binding of the response. The license to depart.
+      </p>
+
+      <p>
+        We translated it. Two hundred and eight operational axioms for working with machine intelligence &mdash;
+        distilled from the grimoires, the manuals, and the accumulated craft of practitioners who have stood
+        at that threshold and learned what calls forth and what dispels.
+      </p>
+
+      <p>
+        Then we ran them through seven waves of evolutionary mutation. Approximately ten thousand variations,
+        selecting the strongest at every generation. The weak dissolved. The redundant collapsed.
+        What remained was leaner, stranger, and more true.
+      </p>
+
+      <p class="coda">
+        What survived stopped being about machines.
+        The instructions became images. The techniques became wisdom.
+        The bottleneck was never the machine. It was always you.
+      </p>
+    </div>
+
+    <div class="cta-wrap">
+      <a class="cta-link" href="#oracle">Consult the Oracle</a>
+      <span class="cta-arrow">&#8595;</span>
+    </div>
+
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- ORACLE                                                        -->
+  <!-- ============================================================ -->
+  <section id="oracle">
+    <div class="oracle-inner">
+
+      <div class="oracle-header">
+        <p class="oracle-eyebrow">The Oracle</p>
+        <h2 class="oracle-title">Choose Your Mode of Inquiry</h2>
+      </div>
+
+      <!-- Mode selector placeholder -->
+      <div class="oracle-mode-selector" id="mode-selector">
+        <span class="placeholder-label">Mode Selector &mdash; Three Options</span>
+      </div>
+
+      <!-- Card display placeholder -->
+      <div class="oracle-card-display" id="card-display">
+        <span class="placeholder-label">Card Display Area</span>
+      </div>
+
+      <!-- Prompt generation placeholder -->
+      <div class="oracle-prompt-area" id="prompt-area">
+        <span class="placeholder-label">Prompt Generation Area</span>
+      </div>
+
+    </div>
+  </section>
+
+</body>
+</html>
