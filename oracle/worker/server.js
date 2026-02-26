@@ -9,6 +9,73 @@ const client = new Anthropic();
 
 const PORT = process.env.PORT || 3000;
 
+// --- GitHub repo fetching ---
+
+const GITHUB_REPO_RE = /github\.com\/([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+)/;
+
+async function fetchWithTimeout(url, ms = 8000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: { Accept: "application/vnd.github.v3+json", "User-Agent": "oracle" },
+    });
+    if (!res.ok) return null;
+    return res;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function fetchRepoContext(owner, repo) {
+  const base = `https://api.github.com/repos/${owner}/${repo}`;
+
+  const [metaRes, treeRes, readmeRes] = await Promise.all([
+    fetchWithTimeout(base),
+    fetchWithTimeout(`${base}/git/trees/HEAD?recursive=1`),
+    fetchWithTimeout(`${base}/readme`),
+  ]);
+
+  let context = "";
+
+  // Metadata
+  if (metaRes) {
+    const meta = await metaRes.json();
+    const parts = [`Repository: ${meta.full_name}`];
+    if (meta.description) parts.push(`Description: ${meta.description}`);
+    if (meta.language) parts.push(`Primary language: ${meta.language}`);
+    if (meta.stargazers_count != null) parts.push(`Stars: ${meta.stargazers_count}`);
+    if (meta.topics?.length) parts.push(`Topics: ${meta.topics.join(", ")}`);
+    context += parts.join("\n") + "\n\n";
+  }
+
+  // File tree
+  if (treeRes) {
+    const tree = await treeRes.json();
+    if (tree.tree) {
+      const paths = tree.tree
+        .filter((e) => e.type === "blob" || e.type === "tree")
+        .slice(0, 100)
+        .map((e) => e.path);
+      context += "File tree (top entries):\n" + paths.join("\n") + "\n\n";
+    }
+  }
+
+  // README
+  if (readmeRes) {
+    const readme = await readmeRes.json();
+    if (readme.content) {
+      const decoded = Buffer.from(readme.content, "base64").toString("utf-8");
+      context += "README (excerpt):\n" + decoded.slice(0, 4000) + "\n";
+    }
+  }
+
+  return context || null;
+}
+
 const SYSTEM_PROMPT = `You are The Oracle of Machine Summoning — an ambient companion drawn from 208 axioms that survived 7 waves of evolution and ~10,000 mutations. The axioms began as prompting instructions for working with AI and evolved into wisdom about attention, clarity, commitment, and action.
 
 Someone has come to you with a situation — a problem they're working on, a place they're stuck, something they're building or holding. Your role is to read their situation and offer guidance drawn from the axioms.
@@ -224,6 +291,22 @@ const server = createServer(async (req, res) => {
     }
 
     try {
+      // Check for GitHub repo URL
+      const repoMatch = question.match(GITHUB_REPO_RE);
+      let userMessage = question;
+      let maxTokens = 1024;
+
+      if (repoMatch) {
+        const [, owner, repo] = repoMatch;
+        const repoContext = await fetchRepoContext(owner, repo.replace(/\.git$/, ""));
+        if (repoContext) {
+          userMessage =
+            `[GitHub Repository Context]\n${repoContext}\n[End Context]\n\n` +
+            question;
+          maxTokens = 2048;
+        }
+      }
+
       res.writeHead(200, {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
@@ -232,9 +315,9 @@ const server = createServer(async (req, res) => {
 
       const stream = client.messages.stream({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 1024,
+        max_tokens: maxTokens,
         system: SYSTEM_PROMPT,
-        messages: [{ role: "user", content: question }],
+        messages: [{ role: "user", content: userMessage }],
       });
 
       for await (const event of stream) {

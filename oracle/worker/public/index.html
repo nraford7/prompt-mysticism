@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#faf8f5">
-  <title>Oracle</title>
+  <title>The Repomancer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
@@ -60,47 +60,36 @@
     }
 
     .prompt-area {
-      position: relative;
       margin-bottom: 3.5rem;
-      min-height: 3.2rem;
-    }
-
-    .prompt-title,
-    .prompt-hint {
-      transition: opacity 0.2s ease;
     }
 
     .prompt-title {
       font-family: var(--serif);
-      font-size: 2.4rem;
-      font-weight: 300;
+      font-size: 3.2rem;
+      font-weight: 400;
       font-style: italic;
       color: var(--ink);
-      line-height: 1.3;
+      line-height: 1.2;
       letter-spacing: -0.01em;
     }
 
-    .prompt-hint {
-      position: absolute;
-      top: 50%;
-      left: 0;
-      right: 0;
-      transform: translateY(-50%);
-      opacity: 0;
+    .prompt-subtitle {
       font-family: var(--serif);
-      font-size: 1.05rem;
+      font-size: 1.3rem;
       font-weight: 300;
       font-style: italic;
-      color: var(--ink-faint);
+      color: var(--ink-light);
+      margin-top: 0.5rem;
+      letter-spacing: 0.04em;
+    }
+
+    .prompt-hint {
+      font-family: var(--serif);
+      font-size: 1.1rem;
+      font-weight: 300;
+      color: var(--ink-light);
+      margin-top: 1.5rem;
       line-height: 1.6;
-    }
-
-    .prompt-area.is-focused .prompt-title {
-      opacity: 0;
-    }
-
-    .prompt-area.is-focused .prompt-hint {
-      opacity: 1;
     }
 
     .input-line {
@@ -326,20 +315,21 @@
 
     <div class="ask" id="ask">
       <div class="prompt-area" id="prompt-area">
-        <p class="prompt-title" id="prompt-title">What do you seek?</p>
-        <p class="prompt-hint" id="prompt-hint">Describe what you're building, where you're stuck, or what question you have about AI. Be specific.</p>
+        <p class="prompt-title" id="prompt-title">The Repomancer</p>
+        <p class="prompt-subtitle">Gitomancy for the Modern Age</p>
+        <p class="prompt-hint" id="prompt-hint">Point it at a repo. Receive a reading.</p>
       </div>
       <div class="input-line">
         <textarea
           class="the-input"
           id="question"
-          placeholder=""
+          placeholder="Paste your public repo link here"
           maxlength="2000"
           rows="1"
         ></textarea>
       </div>
       <div class="submit-row">
-        <button class="btn-submit" id="btn-submit">ask</button>
+        <button class="btn-submit" id="btn-submit">get a reading</button>
       </div>
       <div class="error-msg" id="error"></div>
     </div>
@@ -369,8 +359,6 @@
     const answerText  = document.getElementById('answer-text');
     const returnRow   = document.getElementById('return-row');
     const errorEl     = document.getElementById('error');
-    const promptArea  = document.getElementById('prompt-area');
-
     function showError(msg) {
       errorEl.textContent = msg;
       errorEl.classList.add('is-visible');
@@ -494,16 +482,6 @@
     }
     questionEl.addEventListener('input', autoResize);
 
-    /* Prompt text swap on focus/blur */
-    questionEl.addEventListener('focus', () => {
-      promptArea.classList.add('is-focused');
-    });
-
-    questionEl.addEventListener('blur', () => {
-      if (!questionEl.value.trim()) {
-        promptArea.classList.remove('is-focused');
-      }
-    });
   </script>
 
 </body>
