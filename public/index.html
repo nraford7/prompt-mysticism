@@ -218,6 +218,10 @@
       color: var(--ink);
     }
 
+    .answer-text p {
+      margin: 0.4em 0;
+    }
+
     .answer-text strong {
       font-weight: 500;
       color: var(--ink);
@@ -445,10 +449,16 @@
 
     function renderMarkdown(text) {
       return text
-        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.+?)\*/g, '<em>$1</em>')
-        .replace(/^---$/gm, '<hr>')
-        .replace(/\n/g, '<br>');
+        .split(/\n\n+/)
+        .map(block => {
+          const html = block
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.+?)\*/g, '<em>$1</em>')
+            .replace(/^---$/gm, '<hr>')
+            .replace(/\n/g, '<br>');
+          return html === '<hr>' ? html : `<p>${html}</p>`;
+        })
+        .join('');
     }
 
     function setRepoTitle(name, url) {
