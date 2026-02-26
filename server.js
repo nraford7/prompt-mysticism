@@ -3,11 +3,15 @@ import { createServer } from "http";
 import { readFile } from "fs/promises";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
+import { randomUUID } from "crypto";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const client = new Anthropic();
 
 const PORT = process.env.PORT || 3000;
+
+// In-memory readings store for shareable URLs
+const readings = new Map();
 
 // --- GitHub repo fetching ---
 
@@ -385,6 +389,64 @@ const server = createServer(async (req, res) => {
         );
         res.end();
       }
+    }
+    return;
+  }
+
+  // Save a reading for sharing
+  if (req.method === "POST" && req.url === "/readings") {
+    let body = "";
+    for await (const chunk of req) body += chunk;
+
+    let data;
+    try {
+      data = JSON.parse(body);
+    } catch {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Invalid JSON" }));
+      return;
+    }
+
+    if (!data.reading) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Reading required" }));
+      return;
+    }
+
+    const id = randomUUID();
+    readings.set(id, {
+      repoName: data.repoName || null,
+      repoUrl: data.repoUrl || null,
+      reading: data.reading,
+      createdAt: Date.now(),
+    });
+
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ id }));
+    return;
+  }
+
+  // Serve a shared reading
+  const readingMatch = req.method === "GET" && req.url.match(/^\/r\/([a-f0-9-]+)$/);
+  if (readingMatch) {
+    const reading = readings.get(readingMatch[1]);
+    if (!reading) {
+      res.writeHead(404);
+      res.end("Reading not found");
+      return;
+    }
+
+    try {
+      const html = await getHTML();
+      const injected = html.replace(
+        "</head>",
+        `<script id="reading-data" type="application/json">${JSON.stringify(reading)}</script>\n</head>`
+      );
+      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+      res.end(injected);
+    } catch {
+      res.writeHead(500);
+      res.end("Could not load page");
     }
     return;
   }

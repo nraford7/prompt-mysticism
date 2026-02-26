@@ -278,6 +278,63 @@
       color: var(--ink-light);
     }
 
+    .return-sep {
+      color: var(--ink-ghost);
+      margin: 0 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    /* -------------------------------------------------- */
+    /* BACK ARROW                                          */
+    /* -------------------------------------------------- */
+    .btn-back {
+      position: fixed;
+      top: 2rem;
+      left: 2rem;
+      background: none;
+      border: none;
+      color: var(--ink-faint);
+      font-family: var(--serif);
+      font-size: 1.5rem;
+      font-style: italic;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.6s ease, color 0.3s ease;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .btn-back.is-visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .btn-back:hover {
+      color: var(--ink-light);
+    }
+
+    /* -------------------------------------------------- */
+    /* REPO TITLE                                          */
+    /* -------------------------------------------------- */
+    .repo-title {
+      margin-bottom: 1.5rem;
+      display: none;
+    }
+
+    .repo-title a {
+      font-family: var(--serif);
+      font-size: 1rem;
+      font-weight: 300;
+      color: var(--ink-faint);
+      text-decoration: none;
+      letter-spacing: 0.03em;
+      transition: color 0.3s ease;
+    }
+
+    .repo-title a:hover {
+      color: var(--ink-light);
+    }
+
     /* -------------------------------------------------- */
     /* ERROR                                               */
     /* -------------------------------------------------- */
@@ -312,6 +369,8 @@
 </head>
 <body>
 
+  <button class="btn-back" id="btn-back" aria-label="Back">←</button>
+
   <div class="container">
 
     <div class="ask" id="ask">
@@ -340,10 +399,15 @@
     </div>
 
     <div class="answer" id="answer">
+      <div class="repo-title" id="repo-title">
+        <a id="repo-link" href="#" target="_blank" rel="noopener"></a>
+      </div>
       <div class="answer-rule"></div>
       <div class="answer-text" id="answer-text"></div>
       <div class="return" id="return-row">
         <button class="btn-return" id="btn-return">ask again</button>
+        <span class="return-sep" id="share-sep">·</span>
+        <button class="btn-return" id="btn-share">share reading</button>
       </div>
     </div>
 
@@ -351,16 +415,26 @@
 
   <script>
     const API_URL = '/oracle';
+    const GITHUB_RE = /github\.com\/([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+)/;
+
     const askEl       = document.getElementById('ask');
     const questionEl  = document.getElementById('question');
     const btnSubmit   = document.getElementById('btn-submit');
     const btnReturn   = document.getElementById('btn-return');
+    const btnBack     = document.getElementById('btn-back');
+    const btnShare    = document.getElementById('btn-share');
+    const shareSep    = document.getElementById('share-sep');
     const waitingEl   = document.getElementById('waiting');
     const answerEl    = document.getElementById('answer');
     const answerText  = document.getElementById('answer-text');
     const returnRow   = document.getElementById('return-row');
     const errorEl     = document.getElementById('error');
     const waitingText = document.getElementById('waiting-text');
+    const repoTitleEl = document.getElementById('repo-title');
+    const repoLinkEl  = document.getElementById('repo-link');
+
+    let currentReading = { repoName: null, repoUrl: null, text: '' };
+    let isSharedReading = false;
 
     function showError(msg) {
       errorEl.textContent = msg;
@@ -376,6 +450,16 @@
         .replace(/\n/g, '<br>');
     }
 
+    function setRepoTitle(name, url) {
+      if (name && url) {
+        repoLinkEl.textContent = name;
+        repoLinkEl.href = url;
+        repoTitleEl.style.display = 'block';
+      } else {
+        repoTitleEl.style.display = 'none';
+      }
+    }
+
     async function consult() {
       const question = questionEl.value.trim();
       if (!question) return;
@@ -386,12 +470,25 @@
       const isRepo = /github\.com\/[^/]+\/[^/]+/.test(question);
       waitingText.textContent = isRepo ? 'reading the repository...' : 'consulting the oracle...';
 
+      if (isRepo) {
+        const match = question.match(GITHUB_RE);
+        if (match) {
+          const repo = match[2].replace(/\.git$/, '');
+          currentReading.repoName = `${match[1]}/${repo}`;
+          currentReading.repoUrl = `https://github.com/${match[1]}/${repo}`;
+        }
+      } else {
+        currentReading.repoName = null;
+        currentReading.repoUrl = null;
+      }
+
       setTimeout(() => {
         waitingEl.classList.add('is-visible');
       }, 400);
 
       answerEl.classList.remove('is-visible');
       returnRow.classList.remove('is-visible');
+      btnBack.classList.remove('is-visible');
       answerText.innerHTML = '';
 
       try {
@@ -407,6 +504,7 @@
         }
 
         waitingEl.classList.remove('is-visible');
+        setRepoTitle(currentReading.repoName, currentReading.repoUrl);
 
         setTimeout(() => {
           answerEl.classList.add('is-visible');
@@ -448,7 +546,9 @@
 
         cursor.remove();
         answerText.innerHTML = renderMarkdown(fullText);
+        currentReading.text = fullText;
         returnRow.classList.add('is-visible');
+        btnBack.classList.add('is-visible');
 
       } catch (err) {
         waitingEl.classList.remove('is-visible');
@@ -462,7 +562,10 @@
       questionEl.value = '';
       answerEl.classList.remove('is-visible');
       returnRow.classList.remove('is-visible');
+      btnBack.classList.remove('is-visible');
       answerText.innerHTML = '';
+      repoTitleEl.style.display = 'none';
+      currentReading = { repoName: null, repoUrl: null, text: '' };
 
       setTimeout(() => {
         askEl.classList.remove('is-gone');
@@ -472,7 +575,44 @@
     }
 
     btnSubmit.addEventListener('click', consult);
-    btnReturn.addEventListener('click', reset);
+
+    btnReturn.addEventListener('click', () => {
+      if (isSharedReading) {
+        window.location.href = '/';
+      } else {
+        reset();
+      }
+    });
+
+    btnBack.addEventListener('click', () => {
+      if (isSharedReading) {
+        window.location.href = '/';
+      } else {
+        reset();
+      }
+    });
+
+    btnShare.addEventListener('click', async () => {
+      try {
+        const res = await fetch('/readings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            repoName: currentReading.repoName,
+            repoUrl: currentReading.repoUrl,
+            reading: currentReading.text,
+          }),
+        });
+        const { id } = await res.json();
+        const url = `${location.origin}/r/${id}`;
+        await navigator.clipboard.writeText(url);
+        btnShare.textContent = 'copied';
+        setTimeout(() => { btnShare.textContent = 'share reading'; }, 2000);
+      } catch {
+        btnShare.textContent = 'failed';
+        setTimeout(() => { btnShare.textContent = 'share reading'; }, 2000);
+      }
+    });
 
     questionEl.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
@@ -487,6 +627,27 @@
       questionEl.style.height = questionEl.scrollHeight + 'px';
     }
     questionEl.addEventListener('input', autoResize);
+
+    /* Shared reading: render embedded data on load */
+    const readingDataEl = document.getElementById('reading-data');
+    if (readingDataEl) {
+      try {
+        const data = JSON.parse(readingDataEl.textContent);
+        isSharedReading = true;
+
+        askEl.classList.add('is-gone');
+        setRepoTitle(data.repoName, data.repoUrl);
+        answerText.innerHTML = renderMarkdown(data.reading);
+        answerEl.classList.add('is-visible');
+        btnBack.classList.add('is-visible');
+
+        // Show return row but hide share (already shared)
+        btnShare.style.display = 'none';
+        shareSep.style.display = 'none';
+        btnReturn.textContent = 'consult the oracle';
+        returnRow.classList.add('is-visible');
+      } catch {}
+    }
 
   </script>
 
