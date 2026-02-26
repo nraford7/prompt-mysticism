@@ -160,10 +160,11 @@
     .waiting {
       opacity: 0;
       transition: opacity 0.5s ease;
-      padding: 2rem 0;
+      padding: 4rem 0;
       position: absolute;
       left: 50%;
       transform: translateX(-50%);
+      text-align: center;
     }
 
     .waiting.is-visible {
@@ -173,18 +174,18 @@
       transform: none;
     }
 
-    .waiting-dot {
-      display: inline-block;
-      width: 3px;
-      height: 3px;
-      border-radius: 50%;
-      background: var(--ink-faint);
-      animation: wait-pulse 3s ease-in-out infinite;
+    .waiting-text {
+      font-family: var(--serif);
+      font-size: 1.2rem;
+      font-weight: 300;
+      font-style: italic;
+      color: var(--ink-faint);
+      animation: wait-pulse 2.5s ease-in-out infinite;
     }
 
     @keyframes wait-pulse {
-      0%, 100% { opacity: 0.2; }
-      50%      { opacity: 0.7; }
+      0%, 100% { opacity: 0.3; }
+      50%      { opacity: 0.8; }
     }
 
     /* -------------------------------------------------- */
@@ -335,7 +336,7 @@
     </div>
 
     <div class="waiting" id="waiting">
-      <span class="waiting-dot"></span>
+      <span class="waiting-text" id="waiting-text">reading the repository...</span>
     </div>
 
     <div class="answer" id="answer">
@@ -359,6 +360,8 @@
     const answerText  = document.getElementById('answer-text');
     const returnRow   = document.getElementById('return-row');
     const errorEl     = document.getElementById('error');
+    const waitingText = document.getElementById('waiting-text');
+
     function showError(msg) {
       errorEl.textContent = msg;
       errorEl.classList.add('is-visible');
@@ -379,6 +382,9 @@
 
       btnSubmit.disabled = true;
       askEl.classList.add('is-gone');
+
+      const isRepo = /github\.com\/[^/]+\/[^/]+/.test(question);
+      waitingText.textContent = isRepo ? 'reading the repository...' : 'consulting the oracle...';
 
       setTimeout(() => {
         waitingEl.classList.add('is-visible');
