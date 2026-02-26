@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1a0508">
+  <title>The Oracle</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=Cormorant+SC:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:           #1a0508;
+      --ink-mid:       #220a10;
+      --parchment:     #f0e6d8;
+      --parchment-dim: #c4b098;
+      --gold:          #d4a040;
+      --gold-dim:      #8a5e20;
+      --gold-bright:   #f0c050;
+      --crimson:       #6b1520;
+      --serif:         'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+      --serif-sc:      'Cormorant SC', Georgia, serif;
+      --sans:          -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--ink);
+      color: var(--parchment);
+      font-family: var(--sans);
+      line-height: 1.7;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+      background-image:
+        radial-gradient(ellipse at 25% 15%, rgba(120, 20, 30, 0.25) 0%, transparent 50%),
+        radial-gradient(ellipse at 75% 85%, rgba(100, 15, 25, 0.2) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 105%, rgba(210, 160, 60, 0.07) 0%, transparent 35%),
+        radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(10, 2, 4, 0.5) 100%);
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      bottom: -10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120%;
+      height: 40%;
+      background: radial-gradient(ellipse at 50% 100%, rgba(210, 160, 60, 0.06) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+      animation: candle-flicker 4s ease-in-out infinite;
+    }
+
+    @keyframes candle-flicker {
+      0%, 100% { opacity: 0.8; }
+      25%      { opacity: 1; }
+      50%      { opacity: 0.6; }
+      75%      { opacity: 0.9; }
+    }
+
+    .container {
+      max-width: 560px;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+
+    .title {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 500;
+      color: var(--parchment);
+      line-height: 1.2;
+      margin-bottom: 0.8rem;
+    }
+
+    .title em {
+      font-style: italic;
+      color: var(--gold);
+    }
+
+    .subtitle {
+      font-family: var(--sans);
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      color: var(--parchment-dim);
+      opacity: 0.6;
+    }
+
+    .subtitle a {
+      color: var(--gold-dim);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s ease, color 0.2s ease;
+    }
+
+    .subtitle a:hover {
+      color: var(--gold);
+      border-bottom-color: var(--gold-dim);
+    }
+
+    /* Input area */
+    .input-area {
+      margin-bottom: 2rem;
+    }
+
+    .prompt-label {
+      font-family: var(--serif);
+      font-size: 0.92rem;
+      font-style: italic;
+      color: var(--parchment-dim);
+      margin-bottom: 1rem;
+      opacity: 0.7;
+    }
+
+    .prompt-input {
+      width: 100%;
+      min-height: 120px;
+      background: transparent;
+      border: 1px solid var(--crimson);
+      border-radius: 3px;
+      color: var(--parchment);
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      line-height: 1.8;
+      padding: 1.2rem 1.4rem;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .prompt-input::placeholder {
+      color: var(--parchment-dim);
+      opacity: 0.35;
+      font-style: italic;
+    }
+
+    .prompt-input:focus {
+      border-color: var(--gold-dim);
+      box-shadow: 0 0 30px rgba(210, 160, 60, 0.08);
+    }
+
+    /* Submit */
+    .submit-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 3rem;
+    }
+
+    .btn-ask {
+      background: transparent;
+      border: 1px solid var(--crimson);
+      color: var(--gold);
+      font-family: var(--serif);
+      font-size: 1rem;
+      font-style: italic;
+      letter-spacing: 0.06em;
+      padding: 0.65rem 2.2rem;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease;
+    }
+
+    .btn-ask:hover {
+      border-color: var(--gold);
+      color: var(--gold-bright);
+      box-shadow: 0 0 20px rgba(210, 160, 60, 0.12);
+    }
+
+    .btn-ask:disabled {
+      opacity: 0.3;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    /* Response */
+    .response {
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .response.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .response-divider {
+      width: 40%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--crimson), var(--gold-dim), var(--crimson), transparent);
+      margin: 0 auto 2.5rem;
+      opacity: 0.5;
+    }
+
+    .response-text {
+      font-family: var(--serif);
+      font-size: clamp(1rem, 2.2vw, 1.12rem);
+      line-height: 2;
+      color: var(--parchment);
+    }
+
+    .response-text strong {
+      color: var(--gold);
+      font-weight: 500;
+    }
+
+    .response-text em {
+      color: var(--parchment);
+      font-style: italic;
+    }
+
+    .response-text hr {
+      border: none;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--crimson), var(--gold-dim), var(--crimson), transparent);
+      margin: 2rem 0;
+      opacity: 0.4;
+    }
+
+    /* Cursor blink while streaming */
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1.1em;
+      background: var(--gold);
+      margin-left: 2px;
+      vertical-align: text-bottom;
+      animation: blink 0.8s step-end infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    /* Ask again */
+    .again-row {
+      text-align: center;
+      margin-top: 3rem;
+      opacity: 0;
+      transition: opacity 0.4s ease 0.3s;
+    }
+
+    .again-row.is-visible {
+      opacity: 1;
+    }
+
+    .btn-again {
+      background: transparent;
+      border: 1px solid var(--crimson);
+      color: var(--gold-dim);
+      font-family: var(--serif);
+      font-size: 0.88rem;
+      font-style: italic;
+      letter-spacing: 0.06em;
+      padding: 0.55rem 1.8rem;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: border-color 0.25s ease, color 0.25s ease;
+    }
+
+    .btn-again:hover {
+      border-color: var(--gold-dim);
+      color: var(--gold);
+    }
+
+    /* Error */
+    .error {
+      font-family: var(--sans);
+      font-size: 0.75rem;
+      color: var(--crimson);
+      text-align: center;
+      margin-top: 1rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .error.is-visible {
+      opacity: 0.8;
+    }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 2rem 0;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .loading.is-visible {
+      opacity: 1;
+    }
+
+    .loading-text {
+      font-family: var(--serif);
+      font-size: 0.88rem;
+      font-style: italic;
+      color: var(--gold-dim);
+      opacity: 0.6;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; }
+      50%      { opacity: 0.7; }
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 2rem 1.2rem; }
+      .header { margin-bottom: 3rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <div class="header">
+      <h1 class="title">The <em>Oracle</em></h1>
+      <p class="subtitle">208 axioms for the age of machine intelligence &nbsp;&middot;&nbsp; <a href="index.html">the full grimoire</a></p>
+    </div>
+
+    <div id="input-section">
+      <div class="input-area">
+        <p class="prompt-label">Describe what you're building, where you're stuck, or what you're holding.</p>
+        <textarea
+          class="prompt-input"
+          id="question"
+          placeholder="I'm vibe coding a..."
+          maxlength="2000"
+          rows="5"
+        ></textarea>
+      </div>
+
+      <div class="submit-row">
+        <button class="btn-ask" id="btn-ask">Consult the Oracle</button>
+      </div>
+
+      <div class="error" id="error"></div>
+    </div>
+
+    <div class="loading" id="loading">
+      <span class="loading-text">The oracle is reading...</span>
+    </div>
+
+    <div class="response" id="response">
+      <div class="response-divider"></div>
+      <div class="response-text" id="response-text"></div>
+      <div class="again-row" id="again-row">
+        <button class="btn-again" id="btn-again">Ask Again</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const API_URL = '/oracle';
+
+    const questionEl   = document.getElementById('question');
+    const btnAsk       = document.getElementById('btn-ask');
+    const btnAgain     = document.getElementById('btn-again');
+    const inputSection = document.getElementById('input-section');
+    const loadingEl    = document.getElementById('loading');
+    const responseEl   = document.getElementById('response');
+    const responseText = document.getElementById('response-text');
+    const againRow     = document.getElementById('again-row');
+    const errorEl      = document.getElementById('error');
+
+    function showError(msg) {
+      errorEl.textContent = msg;
+      errorEl.classList.add('is-visible');
+      setTimeout(() => errorEl.classList.remove('is-visible'), 5000);
+    }
+
+    // Minimal markdown: **bold**, *italic*, --- to <hr>, — Axiom lines
+    function renderMarkdown(text) {
+      return text
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/^---$/gm, '<hr>')
+        .replace(/\n/g, '<br>');
+    }
+
+    async function consultOracle() {
+      const question = questionEl.value.trim();
+      if (!question) { showError('The oracle needs something to read.'); return; }
+
+      btnAsk.disabled = true;
+      inputSection.style.opacity = '0.3';
+      inputSection.style.pointerEvents = 'none';
+      loadingEl.classList.add('is-visible');
+      responseEl.classList.remove('is-visible');
+      againRow.classList.remove('is-visible');
+      responseText.innerHTML = '';
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || 'The oracle is silent.');
+        }
+
+        loadingEl.classList.remove('is-visible');
+        responseEl.classList.add('is-visible');
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let fullText = '';
+        let buffer = '';
+
+        // Add cursor
+        const cursor = document.createElement('span');
+        cursor.className = 'cursor';
+        responseText.appendChild(cursor);
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
+            const data = line.slice(6);
+            if (data === '[DONE]') break;
+
+            try {
+              const { text, error } = JSON.parse(data);
+              if (error) { showError(error); break; }
+              if (text) {
+                fullText += text;
+                responseText.innerHTML = renderMarkdown(fullText);
+                responseText.appendChild(cursor);
+              }
+            } catch {}
+          }
+        }
+
+        // Remove cursor, show final render
+        cursor.remove();
+        responseText.innerHTML = renderMarkdown(fullText);
+        againRow.classList.add('is-visible');
+
+      } catch (err) {
+        loadingEl.classList.remove('is-visible');
+        showError(err.message || 'The oracle is silent. Try again.');
+        inputSection.style.opacity = '1';
+        inputSection.style.pointerEvents = 'auto';
+        btnAsk.disabled = false;
+      }
+    }
+
+    function resetOracle() {
+      questionEl.value = '';
+      inputSection.style.opacity = '1';
+      inputSection.style.pointerEvents = 'auto';
+      btnAsk.disabled = false;
+      responseEl.classList.remove('is-visible');
+      againRow.classList.remove('is-visible');
+      responseText.innerHTML = '';
+      questionEl.focus();
+    }
+
+    btnAsk.addEventListener('click', consultOracle);
+    btnAgain.addEventListener('click', resetOracle);
+
+    // Enter to submit (shift+enter for newline)
+    questionEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        consultOracle();
+      }
+    });
+  </script>
+
+</body>
+</html>
