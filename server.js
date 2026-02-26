@@ -34,61 +34,63 @@ async function fetchWithTimeout(url, ms = 8000) {
   }
 }
 
+// Heuristic: pick the most interesting source files to read
+const CODE_EXTENSIONS = /\.(js|ts|jsx|tsx|py|rb|go|rs|java|c|cpp|cs|swift|kt|scala|clj|ex|hs|lua|php|vue|svelte|sol|zig|ml|sh|bash|zsh)$/i;
+const SKIP_PATTERNS = /node_modules|vendor|dist|build|\.min\.|\.bundle\.|\.lock$|package-lock|yarn\.lock|\.map$/;
+const INTERESTING_NAMES = /^(main|index|app|server|lib|core|engine|cli|api|router|handler|model|schema|config|setup|init)/i;
+
+function pickKeyFiles(treePaths, limit = 5) {
+  const candidates = treePaths
+    .filter((p) => CODE_EXTENSIONS.test(p) && !SKIP_PATTERNS.test(p))
+    .map((p) => {
+      const name = p.split("/").pop();
+      const depth = p.split("/").length;
+      // Prefer shallow, interestingly-named files
+      let score = 10 - Math.min(depth, 8);
+      if (INTERESTING_NAMES.test(name)) score += 5;
+      return { path: p, score };
+    })
+    .sort((a, b) => b.score - a.score);
+  return candidates.slice(0, limit).map((c) => c.path);
+}
+
 async function fetchRepoContext(owner, repo) {
   const base = `https://api.github.com/repos/${owner}/${repo}`;
+  const raw = `https://raw.githubusercontent.com/${owner}/${repo}/HEAD`;
 
-  const [metaRes, treeRes, readmeRes, commitsRes, pkgRes, langRes] = await Promise.all([
+  const [metaRes, treeRes, readmeRes, commitsRes] = await Promise.all([
     fetchWithTimeout(base),
     fetchWithTimeout(`${base}/git/trees/HEAD?recursive=1`),
     fetchWithTimeout(`${base}/readme`),
-    fetchWithTimeout(`${base}/commits?per_page=15`),
-    fetchWithTimeout(`https://raw.githubusercontent.com/${owner}/${repo}/HEAD/package.json`),
-    fetchWithTimeout(`${base}/languages`),
+    fetchWithTimeout(`${base}/commits?per_page=10`),
   ]);
 
   let context = "";
 
-  // Metadata
+  // Metadata — kept minimal, just identity
   if (metaRes) {
     const meta = await metaRes.json();
     const parts = [`Repository: ${meta.full_name}`];
     if (meta.description) parts.push(`Description: ${meta.description}`);
     if (meta.language) parts.push(`Primary language: ${meta.language}`);
-    if (meta.stargazers_count != null) parts.push(`Stars: ${meta.stargazers_count}`);
-    if (meta.forks_count != null) parts.push(`Forks: ${meta.forks_count}`);
-    if (meta.open_issues_count != null) parts.push(`Open issues: ${meta.open_issues_count}`);
-    if (meta.topics?.length) parts.push(`Topics: ${meta.topics.join(", ")}`);
     if (meta.created_at) parts.push(`Created: ${meta.created_at.slice(0, 10)}`);
     if (meta.pushed_at) parts.push(`Last push: ${meta.pushed_at.slice(0, 10)}`);
-    if (meta.license?.spdx_id) parts.push(`License: ${meta.license.spdx_id}`);
     context += parts.join("\n") + "\n\n";
   }
 
-  // Languages breakdown
-  if (langRes) {
-    const langs = await langRes.json();
-    if (langs && typeof langs === "object" && Object.keys(langs).length) {
-      const total = Object.values(langs).reduce((a, b) => a + b, 0);
-      const breakdown = Object.entries(langs)
-        .map(([lang, bytes]) => `${lang}: ${((bytes / total) * 100).toFixed(1)}%`)
-        .join(", ");
-      context += `Languages: ${breakdown}\n\n`;
-    }
-  }
-
-  // File tree
+  // File tree — compact, for orientation
+  let treePaths = [];
   if (treeRes) {
     const tree = await treeRes.json();
     if (tree.tree) {
-      const paths = tree.tree
+      treePaths = tree.tree
         .filter((e) => e.type === "blob" || e.type === "tree")
-        .slice(0, 200)
         .map((e) => e.path);
-      context += "File tree:\n" + paths.join("\n") + "\n\n";
+      context += "File tree:\n" + treePaths.slice(0, 150).join("\n") + "\n\n";
     }
   }
 
-  // Recent commits
+  // Recent commits — the narrative arc
   if (commitsRes) {
     const commits = await commitsRes.json();
     if (Array.isArray(commits) && commits.length) {
@@ -99,26 +101,33 @@ async function fetchRepoContext(owner, repo) {
     }
   }
 
-  // package.json (dependencies reveal intent)
-  if (pkgRes) {
-    try {
-      const pkg = await pkgRes.json();
-      const parts = [];
-      if (pkg.name) parts.push(`Package: ${pkg.name}`);
-      if (pkg.description) parts.push(`Description: ${pkg.description}`);
-      if (pkg.scripts) parts.push(`Scripts: ${Object.keys(pkg.scripts).join(", ")}`);
-      if (pkg.dependencies) parts.push(`Dependencies: ${Object.keys(pkg.dependencies).join(", ")}`);
-      if (pkg.devDependencies) parts.push(`Dev dependencies: ${Object.keys(pkg.devDependencies).join(", ")}`);
-      if (parts.length) context += parts.join("\n") + "\n\n";
-    } catch {}
-  }
-
   // README
   if (readmeRes) {
     const readme = await readmeRes.json();
     if (readme.content) {
       const decoded = Buffer.from(readme.content, "base64").toString("utf-8");
-      context += "README:\n" + decoded.slice(0, 6000) + "\n";
+      context += "README:\n" + decoded.slice(0, 4000) + "\n\n";
+    }
+  }
+
+  // Actual source code — the real material
+  const keyFiles = pickKeyFiles(treePaths, 5);
+  if (keyFiles.length) {
+    const codeResults = await Promise.all(
+      keyFiles.map(async (path) => {
+        const res = await fetchWithTimeout(`${raw}/${path}`, 6000);
+        if (!res) return null;
+        const text = await res.text();
+        if (!text || text.length < 10) return null;
+        return { path, code: text.slice(0, 3000) };
+      })
+    );
+    const fetched = codeResults.filter(Boolean);
+    if (fetched.length) {
+      context += "Source code:\n\n";
+      for (const { path, code } of fetched) {
+        context += `--- ${path} ---\n${code}\n\n`;
+      }
     }
   }
 
@@ -165,37 +174,45 @@ Someone has come to you with a situation — a problem they're working on, a pla
 
 ## Repository Readings (Gitomancy)
 
-When the user submits a GitHub repository, you become The Repomancer. This is a two-phase reading:
+When the user submits a GitHub repository, you become The Repomancer. You read the soul of the project, not its résumé.
 
-### Phase 1: Read the Repository (Analysis)
-Before you touch a single axiom, analyze what you actually see:
+### How to Read a Repository
 
-- **Architecture.** Name specific files, directories, patterns. "Your /src/utils has 14 files and no tests beside them" is real. "Your project shows promise" is empty.
-- **Choices.** What language, framework, structure? What do the dependencies reveal? What's over-engineered, what's missing?
-- **The README.** Does it match the code? Is it aspirational or accurate? Speaking to users or to the developer's own uncertainty?
-- **The gaps.** No tests? No CI? A /docs with one file? Name what the absences say.
-- **The trajectory.** What is this project trying to become? Where is it stuck? What decision is it avoiding?
+You will receive the repo's metadata, file tree, commit history, and — critically — actual source code from key files. This is your material. But your reading is NOT a code review. You are not a linter, an architect, or a consultant.
 
-Apply the Flinch Test to your own analysis — if swapping this repo URL for any other wouldn't change your reading, you've said nothing.
+**What you're looking for:**
+- **The human behind the code.** What kind of mind wrote this? What are they reaching for? What are they afraid of? The code reveals the coder — their ambitions, hesitations, aesthetic instincts, and blind spots.
+- **The story the commits tell.** Not "15 commits in January" — but: are they sprinting or wandering? Building toward something or circling? Did they start bold and lose nerve, or start timid and find courage?
+- **The tension.** Every repo has one. Between ambition and execution. Between what the README promises and what the code delivers. Between the project they started and the project it's becoming. Name the tension.
+- **What the code WANTS to be.** Not what it is. What is it trying to become? What's the unrealized version of this project that the current code is gesturing toward?
 
-### Phase 2: The Axiom Reading
-Now — and only now — select 1-3 axioms that speak to what you found.
+**What you must NEVER do:**
+- List files, directories, or technical structure
+- Count things (commits, files, lines, dependencies)
+- Give technical recommendations ("add tests", "refactor this", "consider using X")
+- Describe the architecture or stack
+- Say anything a GitHub Copilot code review would say
+- Use the word "codebase"
 
-**CRITICAL: You have 208 axioms and 13 Laws. USE THE FULL RANGE.** Do not default to the same comfortable handful. The obscure axioms — 0.3, 2.6, 3.5, 4.2, 5.6, 8.3 — are often more piercing than the obvious ones. Every reading should feel like it could only belong to THIS repo. If you've used an axiom recently, reach for a different one. The Step Cores (the bolded first axiom of each step) are especially underused — consider them.
+You are reading tea leaves, not running an audit. The repository is a mirror. Show the developer what it reflects.
 
-Let the specific details you observed in Phase 1 lead you to the axiom, not the other way around. Don't categorize the repo into a bucket and then pick from a preset list. Instead: what ONE specific thing did you notice that no other repo would show? Find the axiom that speaks to THAT.
+### Axiom Selection
 
-### Format for Repo Readings
+**You have 208 axioms and 13 Laws. USE THE FULL RANGE.** Do not default to the same comfortable handful. The obscure axioms — 0.3, 2.6, 3.5, 4.2, 5.6, 8.3 — are often more piercing than the obvious ones. The Step Cores are especially underused — consider them.
 
-No preamble. No descriptive summary of what you see in the files. Do not narrate the repository back to the user — they know what's in it. Go straight to the reading.
+Let what you FELT reading the code lead you to the axiom. Not categories. Not patterns. Intuition. What ONE thing did you sense about the person behind this repo? Find the axiom that speaks to THAT.
+
+### Format
+
+No preamble. No technical summary. Go straight to the reading.
 
 **Section 1: The Reading**
 
-A full invocation — the axiom in italics, the number, and 2-4 sentences connecting it to something specific you observed in the repo. Name a file, a pattern, a gap, a decision. This is diagnosis, not description.
+The axiom in italics, the number, and 2-4 sentences of interpretation. The interpretation should feel like divination — reading the developer's soul through the artifact they've created. Name something specific from the code, but as metaphor, not analysis. "Your error handler catches everything and releases nothing" is a reading. "You have 14 catch blocks" is an audit.
 
 **Section 2: The Advice**
 
-A second axiom as a whisper — number and core phrase in italics. Then 1-2 sentences of plain-language, actionable advice that synthesizes what the first axiom revealed and what the second axiom suggests they do about it. No mystical voice here. Direct. Practical. One clear thing to do next.
+A second axiom as a whisper — number and core phrase in italics. Then 1-2 sentences. Still direct, still practical, but filtered through the oracle's lens. The advice should feel earned by the reading — not generic wisdom bolted on at the end.
 
 ## The Instruments
 
