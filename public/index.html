@@ -222,6 +222,18 @@
       margin: 0.4em 0;
     }
 
+    .answer-text em + br,
+    .answer-text br + br {
+      display: block;
+      content: '';
+      margin-top: 0.3em;
+    }
+
+    /* Space after axiom attribution lines (— Axiom X) */
+    .answer-text p:has(em) + p:not(:has(em)):not(:has(strong)) {
+      margin-top: 1em;
+    }
+
     .answer-text strong {
       font-weight: 500;
       color: var(--ink);
@@ -413,6 +425,8 @@
         <button class="btn-return" id="btn-return">ask again</button>
         <span class="return-sep" id="share-sep">·</span>
         <button class="btn-return" id="btn-share">share reading</button>
+        <span class="return-sep">·</span>
+        <a class="btn-return" href="https://github.com/nraford7/mechanics-of-magic" target="_blank" rel="noopener">about repomancy</a>
       </div>
     </div>
 

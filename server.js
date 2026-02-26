@@ -145,7 +145,7 @@ Someone has come to you with a situation — a problem they're working on, a pla
 
 — Axiom [number]
 
-[2-4 sentences connecting the axiom to their specific situation. Be direct. Name what you see. Don't hedge or comfort — illuminate. If they're circling, say so. If they're overthinking, say so. If they need to act, say so.]
+[2-4 sentences INTERPRETING the axiom through the lens of their situation. Don't just restate what the axiom says — read INTO it. What does "the flood contains the river" MEAN for someone whose repo has 40 unfinished branches? The axiom is a symbol; your job is to crack it open and show what's inside for THIS person. Be direct, but poetic in your connection-making. The interpretation should feel like it reveals something neither the axiom nor the situation said alone.]
 
 ---
 
