@@ -3,366 +3,318 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#1a0508">
-  <title>The Oracle</title>
+  <meta name="theme-color" content="#faf8f5">
+  <title>Oracle</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=Cormorant+SC:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --ink:           #1a0508;
-      --ink-mid:       #220a10;
-      --parchment:     #f0e6d8;
-      --parchment-dim: #c4b098;
-      --gold:          #d4a040;
-      --gold-dim:      #8a5e20;
-      --gold-bright:   #f0c050;
-      --crimson:       #6b1520;
-      --serif:         'Cormorant Garamond', Georgia, 'Times New Roman', serif;
-      --serif-sc:      'Cormorant SC', Georgia, serif;
-      --sans:          -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      --white:      #faf8f5;
+      --ink:        #1a1815;
+      --ink-light:  #3d3833;
+      --ink-faint:  #b5aea5;
+      --ink-ghost:  #d8d3cc;
+      --gold:       #8a7340;
+      --serif:      'Cormorant Garamond', 'Times New Roman', Georgia, serif;
     }
 
-    html { scroll-behavior: smooth; }
+    html {
+      font-size: 20px;
+      height: 100%;
+    }
 
     body {
-      background-color: var(--ink);
-      color: var(--parchment);
-      font-family: var(--sans);
-      line-height: 1.7;
-      min-height: 100vh;
+      background: var(--white);
+      color: var(--ink);
+      font-family: var(--serif);
+      min-height: 100%;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 3rem 2rem;
-      background-image:
-        radial-gradient(ellipse at 25% 15%, rgba(120, 20, 30, 0.25) 0%, transparent 50%),
-        radial-gradient(ellipse at 75% 85%, rgba(100, 15, 25, 0.2) 0%, transparent 50%),
-        radial-gradient(ellipse at 50% 105%, rgba(210, 160, 60, 0.07) 0%, transparent 35%),
-        radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(10, 2, 4, 0.5) 100%);
-      position: relative;
-    }
-
-    body::before {
-      content: '';
-      position: fixed;
-      bottom: -10%;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 120%;
-      height: 40%;
-      background: radial-gradient(ellipse at 50% 100%, rgba(210, 160, 60, 0.06) 0%, transparent 60%);
-      pointer-events: none;
-      z-index: 0;
-      animation: candle-flicker 4s ease-in-out infinite;
-    }
-
-    @keyframes candle-flicker {
-      0%, 100% { opacity: 0.8; }
-      25%      { opacity: 1; }
-      50%      { opacity: 0.6; }
-      75%      { opacity: 0.9; }
+      padding: 4rem 2rem;
+      -webkit-font-smoothing: antialiased;
     }
 
     .container {
-      max-width: 560px;
+      max-width: 600px;
       width: 100%;
-      position: relative;
-      z-index: 1;
-    }
-
-    /* Header */
-    .header {
       text-align: center;
-      margin-bottom: 4rem;
     }
 
-    .title {
+    /* -------------------------------------------------- */
+    /* THE QUESTION                                        */
+    /* -------------------------------------------------- */
+    .ask {
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .ask.is-gone {
+      opacity: 0;
+      transform: translateY(-8px);
+      pointer-events: none;
+      position: absolute;
+      visibility: hidden;
+    }
+
+    .question-prompt {
       font-family: var(--serif);
-      font-size: clamp(2rem, 5vw, 3.2rem);
-      font-weight: 500;
-      color: var(--parchment);
-      line-height: 1.2;
-      margin-bottom: 0.8rem;
-    }
-
-    .title em {
+      font-size: 2.4rem;
+      font-weight: 300;
       font-style: italic;
-      color: var(--gold);
+      color: var(--ink);
+      margin-bottom: 3.5rem;
+      line-height: 1.3;
+      letter-spacing: -0.01em;
     }
 
-    .subtitle {
-      font-family: var(--sans);
-      font-size: 0.78rem;
-      letter-spacing: 0.06em;
-      color: var(--parchment-dim);
+    .input-line {
+      position: relative;
+      text-align: left;
+    }
+
+    .the-input {
+      width: 100%;
+      border: none;
+      border-bottom: 1px solid var(--ink-ghost);
+      background: transparent;
+      color: var(--ink);
+      font-family: var(--serif);
+      font-size: 1.3rem;
+      font-weight: 300;
+      line-height: 1.9;
+      padding: 0.8rem 0;
+      outline: none;
+      resize: none;
+      min-height: 3.8rem;
+      transition: border-color 0.4s ease;
+    }
+
+    .the-input::placeholder {
+      color: var(--ink-faint);
+      font-style: italic;
       opacity: 0.6;
     }
 
-    .subtitle a {
-      color: var(--gold-dim);
-      text-decoration: none;
-      border-bottom: 1px solid transparent;
-      transition: border-color 0.2s ease, color 0.2s ease;
+    .the-input:focus {
+      border-bottom-color: var(--ink-light);
     }
 
-    .subtitle a:hover {
-      color: var(--gold);
-      border-bottom-color: var(--gold-dim);
-    }
-
-    /* Input area */
-    .input-area {
-      margin-bottom: 2rem;
-    }
-
-    .prompt-label {
-      font-family: var(--serif);
-      font-size: 0.92rem;
-      font-style: italic;
-      color: var(--parchment-dim);
-      margin-bottom: 1rem;
-      opacity: 0.7;
-    }
-
-    .prompt-input {
-      width: 100%;
-      min-height: 120px;
-      background: transparent;
-      border: 1px solid var(--crimson);
-      border-radius: 3px;
-      color: var(--parchment);
-      font-family: var(--serif);
-      font-size: 1.05rem;
-      line-height: 1.8;
-      padding: 1.2rem 1.4rem;
-      resize: vertical;
-      outline: none;
-      transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .prompt-input::placeholder {
-      color: var(--parchment-dim);
-      opacity: 0.35;
-      font-style: italic;
-    }
-
-    .prompt-input:focus {
-      border-color: var(--gold-dim);
-      box-shadow: 0 0 30px rgba(210, 160, 60, 0.08);
-    }
-
-    /* Submit */
     .submit-row {
       display: flex;
       justify-content: flex-end;
-      margin-bottom: 3rem;
+      margin-top: 2rem;
     }
 
-    .btn-ask {
-      background: transparent;
-      border: 1px solid var(--crimson);
-      color: var(--gold);
+    .btn-submit {
+      background: none;
+      border: none;
+      color: var(--ink-faint);
       font-family: var(--serif);
-      font-size: 1rem;
+      font-size: 0.85rem;
       font-style: italic;
+      font-weight: 400;
       letter-spacing: 0.06em;
-      padding: 0.65rem 2.2rem;
       cursor: pointer;
-      border-radius: 2px;
-      transition: border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease;
+      padding: 0.3rem 0;
+      transition: color 0.3s ease;
     }
 
-    .btn-ask:hover {
-      border-color: var(--gold);
-      color: var(--gold-bright);
-      box-shadow: 0 0 20px rgba(210, 160, 60, 0.12);
+    .btn-submit:hover {
+      color: var(--ink);
     }
 
-    .btn-ask:disabled {
-      opacity: 0.3;
-      cursor: default;
+    .btn-submit:disabled {
+      opacity: 0;
       pointer-events: none;
     }
 
-    /* Response */
-    .response {
+    /* -------------------------------------------------- */
+    /* WAITING                                             */
+    /* -------------------------------------------------- */
+    .waiting {
       opacity: 0;
-      transform: translateY(12px);
-      transition: opacity 0.5s ease, transform 0.5s ease;
+      transition: opacity 0.5s ease;
+      padding: 2rem 0;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
     }
 
-    .response.is-visible {
+    .waiting.is-visible {
+      opacity: 1;
+      position: relative;
+      left: auto;
+      transform: none;
+    }
+
+    .waiting-dot {
+      display: inline-block;
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: var(--ink-faint);
+      animation: wait-pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes wait-pulse {
+      0%, 100% { opacity: 0.2; }
+      50%      { opacity: 0.7; }
+    }
+
+    /* -------------------------------------------------- */
+    /* THE RESPONSE                                        */
+    /* -------------------------------------------------- */
+    .answer {
+      opacity: 0;
+      transform: translateY(15px);
+      transition: opacity 1s ease, transform 1s ease;
+      text-align: left;
+    }
+
+    .answer.is-visible {
       opacity: 1;
       transform: translateY(0);
     }
 
-    .response-divider {
-      width: 40%;
+    .answer-rule {
+      width: 40px;
       height: 1px;
-      background: linear-gradient(to right, transparent, var(--crimson), var(--gold-dim), var(--crimson), transparent);
-      margin: 0 auto 2.5rem;
-      opacity: 0.5;
+      background: var(--ink-ghost);
+      margin-bottom: 3rem;
     }
 
-    .response-text {
+    .answer-text {
       font-family: var(--serif);
-      font-size: clamp(1rem, 2.2vw, 1.12rem);
-      line-height: 2;
-      color: var(--parchment);
+      font-size: 1.3rem;
+      font-weight: 300;
+      line-height: 2.2;
+      color: var(--ink);
     }
 
-    .response-text strong {
-      color: var(--gold);
+    .answer-text strong {
       font-weight: 500;
+      color: var(--ink);
     }
 
-    .response-text em {
-      color: var(--parchment);
+    .answer-text em {
       font-style: italic;
     }
 
-    .response-text hr {
+    .answer-text hr {
       border: none;
       height: 1px;
-      background: linear-gradient(to right, transparent, var(--crimson), var(--gold-dim), var(--crimson), transparent);
-      margin: 2rem 0;
-      opacity: 0.4;
+      background: var(--ink-ghost);
+      width: 30px;
+      margin: 2.5rem 0;
     }
 
-    /* Cursor blink while streaming */
+    /* Cursor */
     .cursor {
       display: inline-block;
-      width: 2px;
-      height: 1.1em;
-      background: var(--gold);
+      width: 1px;
+      height: 1.15em;
+      background: var(--ink-faint);
       margin-left: 2px;
       vertical-align: text-bottom;
-      animation: blink 0.8s step-end infinite;
+      animation: blink 1.2s step-end infinite;
     }
 
     @keyframes blink {
       50% { opacity: 0; }
     }
 
-    /* Ask again */
-    .again-row {
+    /* Return */
+    .return {
+      margin-top: 5rem;
       text-align: center;
-      margin-top: 3rem;
       opacity: 0;
-      transition: opacity 0.4s ease 0.3s;
+      transition: opacity 0.6s ease 0.8s;
     }
 
-    .again-row.is-visible {
+    .return.is-visible {
       opacity: 1;
     }
 
-    .btn-again {
-      background: transparent;
-      border: 1px solid var(--crimson);
-      color: var(--gold-dim);
+    .btn-return {
+      background: none;
+      border: none;
+      color: var(--ink-faint);
       font-family: var(--serif);
-      font-size: 0.88rem;
+      font-size: 0.85rem;
       font-style: italic;
-      letter-spacing: 0.06em;
-      padding: 0.55rem 1.8rem;
       cursor: pointer;
-      border-radius: 2px;
-      transition: border-color 0.25s ease, color 0.25s ease;
+      padding: 0.3rem 0;
+      transition: color 0.3s ease;
     }
 
-    .btn-again:hover {
-      border-color: var(--gold-dim);
-      color: var(--gold);
+    .btn-return:hover {
+      color: var(--ink-light);
     }
 
-    /* Error */
-    .error {
-      font-family: var(--sans);
-      font-size: 0.75rem;
-      color: var(--crimson);
+    /* -------------------------------------------------- */
+    /* ERROR                                               */
+    /* -------------------------------------------------- */
+    .error-msg {
+      font-family: var(--serif);
+      font-size: 0.9rem;
+      font-style: italic;
+      color: var(--ink-faint);
       text-align: center;
-      margin-top: 1rem;
+      margin-top: 1.5rem;
       opacity: 0;
       transition: opacity 0.3s ease;
     }
 
-    .error.is-visible {
-      opacity: 0.8;
-    }
-
-    /* Loading */
-    .loading {
-      text-align: center;
-      padding: 2rem 0;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    .loading.is-visible {
+    .error-msg.is-visible {
       opacity: 1;
     }
 
-    .loading-text {
-      font-family: var(--serif);
-      font-size: 0.88rem;
-      font-style: italic;
-      color: var(--gold-dim);
-      opacity: 0.6;
-      animation: pulse 2s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 0.3; }
-      50%      { opacity: 0.7; }
-    }
-
+    /* -------------------------------------------------- */
+    /* RESPONSIVE                                          */
+    /* -------------------------------------------------- */
     @media (max-width: 600px) {
-      body { padding: 2rem 1.2rem; }
-      .header { margin-bottom: 3rem; }
+      html { font-size: 17px; }
+      body { padding: 3rem 1.5rem; }
+      .question-prompt { font-size: 2rem; margin-bottom: 2.5rem; }
     }
+
+    /* No scrollbar styling — let it be invisible */
+    ::-webkit-scrollbar { width: 0; }
   </style>
 </head>
 <body>
 
   <div class="container">
 
-    <div class="header">
-      <h1 class="title">The <em>Oracle</em></h1>
-      <p class="subtitle">208 axioms for the age of machine intelligence &nbsp;&middot;&nbsp; <a href="index.html">the full grimoire</a></p>
-    </div>
-
-    <div id="input-section">
-      <div class="input-area">
-        <p class="prompt-label">Describe what you're building, where you're stuck, or what you're holding.</p>
+    <div class="ask" id="ask">
+      <p class="question-prompt">What do you seek?</p>
+      <div class="input-line">
         <textarea
-          class="prompt-input"
+          class="the-input"
           id="question"
-          placeholder="I'm vibe coding a..."
+          placeholder=""
           maxlength="2000"
-          rows="5"
+          rows="3"
         ></textarea>
       </div>
-
       <div class="submit-row">
-        <button class="btn-ask" id="btn-ask">Consult the Oracle</button>
+        <button class="btn-submit" id="btn-submit">ask</button>
       </div>
-
-      <div class="error" id="error"></div>
+      <div class="error-msg" id="error"></div>
     </div>
 
-    <div class="loading" id="loading">
-      <span class="loading-text">The oracle is reading...</span>
+    <div class="waiting" id="waiting">
+      <span class="waiting-dot"></span>
     </div>
 
-    <div class="response" id="response">
-      <div class="response-divider"></div>
-      <div class="response-text" id="response-text"></div>
-      <div class="again-row" id="again-row">
-        <button class="btn-again" id="btn-again">Ask Again</button>
+    <div class="answer" id="answer">
+      <div class="answer-rule"></div>
+      <div class="answer-text" id="answer-text"></div>
+      <div class="return" id="return-row">
+        <button class="btn-return" id="btn-return">ask again</button>
       </div>
     </div>
 
@@ -370,24 +322,22 @@
 
   <script>
     const API_URL = '/oracle';
-
-    const questionEl   = document.getElementById('question');
-    const btnAsk       = document.getElementById('btn-ask');
-    const btnAgain     = document.getElementById('btn-again');
-    const inputSection = document.getElementById('input-section');
-    const loadingEl    = document.getElementById('loading');
-    const responseEl   = document.getElementById('response');
-    const responseText = document.getElementById('response-text');
-    const againRow     = document.getElementById('again-row');
-    const errorEl      = document.getElementById('error');
+    const askEl       = document.getElementById('ask');
+    const questionEl  = document.getElementById('question');
+    const btnSubmit   = document.getElementById('btn-submit');
+    const btnReturn   = document.getElementById('btn-return');
+    const waitingEl   = document.getElementById('waiting');
+    const answerEl    = document.getElementById('answer');
+    const answerText  = document.getElementById('answer-text');
+    const returnRow   = document.getElementById('return-row');
+    const errorEl     = document.getElementById('error');
 
     function showError(msg) {
       errorEl.textContent = msg;
       errorEl.classList.add('is-visible');
-      setTimeout(() => errorEl.classList.remove('is-visible'), 5000);
+      setTimeout(() => errorEl.classList.remove('is-visible'), 4000);
     }
 
-    // Minimal markdown: **bold**, *italic*, --- to <hr>, — Axiom lines
     function renderMarkdown(text) {
       return text
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
@@ -396,17 +346,20 @@
         .replace(/\n/g, '<br>');
     }
 
-    async function consultOracle() {
+    async function consult() {
       const question = questionEl.value.trim();
-      if (!question) { showError('The oracle needs something to read.'); return; }
+      if (!question) return;
 
-      btnAsk.disabled = true;
-      inputSection.style.opacity = '0.3';
-      inputSection.style.pointerEvents = 'none';
-      loadingEl.classList.add('is-visible');
-      responseEl.classList.remove('is-visible');
-      againRow.classList.remove('is-visible');
-      responseText.innerHTML = '';
+      btnSubmit.disabled = true;
+      askEl.classList.add('is-gone');
+
+      setTimeout(() => {
+        waitingEl.classList.add('is-visible');
+      }, 400);
+
+      answerEl.classList.remove('is-visible');
+      returnRow.classList.remove('is-visible');
+      answerText.innerHTML = '';
 
       try {
         const res = await fetch(API_URL, {
@@ -417,21 +370,23 @@
 
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          throw new Error(err.error || 'The oracle is silent.');
+          throw new Error(err.error || 'Silence.');
         }
 
-        loadingEl.classList.remove('is-visible');
-        responseEl.classList.add('is-visible');
+        waitingEl.classList.remove('is-visible');
+
+        setTimeout(() => {
+          answerEl.classList.add('is-visible');
+        }, 200);
 
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let fullText = '';
         let buffer = '';
 
-        // Add cursor
         const cursor = document.createElement('span');
         cursor.className = 'cursor';
-        responseText.appendChild(cursor);
+        answerText.appendChild(cursor);
 
         while (true) {
           const { done, value } = await reader.read();
@@ -451,46 +406,45 @@
               if (error) { showError(error); break; }
               if (text) {
                 fullText += text;
-                responseText.innerHTML = renderMarkdown(fullText);
-                responseText.appendChild(cursor);
+                answerText.innerHTML = renderMarkdown(fullText);
+                answerText.appendChild(cursor);
               }
             } catch {}
           }
         }
 
-        // Remove cursor, show final render
         cursor.remove();
-        responseText.innerHTML = renderMarkdown(fullText);
-        againRow.classList.add('is-visible');
+        answerText.innerHTML = renderMarkdown(fullText);
+        returnRow.classList.add('is-visible');
 
       } catch (err) {
-        loadingEl.classList.remove('is-visible');
-        showError(err.message || 'The oracle is silent. Try again.');
-        inputSection.style.opacity = '1';
-        inputSection.style.pointerEvents = 'auto';
-        btnAsk.disabled = false;
+        waitingEl.classList.remove('is-visible');
+        askEl.classList.remove('is-gone');
+        btnSubmit.disabled = false;
+        showError(err.message || 'Silence.');
       }
     }
 
-    function resetOracle() {
+    function reset() {
       questionEl.value = '';
-      inputSection.style.opacity = '1';
-      inputSection.style.pointerEvents = 'auto';
-      btnAsk.disabled = false;
-      responseEl.classList.remove('is-visible');
-      againRow.classList.remove('is-visible');
-      responseText.innerHTML = '';
-      questionEl.focus();
+      answerEl.classList.remove('is-visible');
+      returnRow.classList.remove('is-visible');
+      answerText.innerHTML = '';
+
+      setTimeout(() => {
+        askEl.classList.remove('is-gone');
+        btnSubmit.disabled = false;
+        questionEl.focus();
+      }, 300);
     }
 
-    btnAsk.addEventListener('click', consultOracle);
-    btnAgain.addEventListener('click', resetOracle);
+    btnSubmit.addEventListener('click', consult);
+    btnReturn.addEventListener('click', reset);
 
-    // Enter to submit (shift+enter for newline)
     questionEl.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        consultOracle();
+        consult();
       }
     });
   </script>
