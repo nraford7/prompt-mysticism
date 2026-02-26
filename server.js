@@ -37,10 +37,13 @@ async function fetchWithTimeout(url, ms = 8000) {
 async function fetchRepoContext(owner, repo) {
   const base = `https://api.github.com/repos/${owner}/${repo}`;
 
-  const [metaRes, treeRes, readmeRes] = await Promise.all([
+  const [metaRes, treeRes, readmeRes, commitsRes, pkgRes, langRes] = await Promise.all([
     fetchWithTimeout(base),
     fetchWithTimeout(`${base}/git/trees/HEAD?recursive=1`),
     fetchWithTimeout(`${base}/readme`),
+    fetchWithTimeout(`${base}/commits?per_page=15`),
+    fetchWithTimeout(`https://raw.githubusercontent.com/${owner}/${repo}/HEAD/package.json`),
+    fetchWithTimeout(`${base}/languages`),
   ]);
 
   let context = "";
@@ -52,8 +55,25 @@ async function fetchRepoContext(owner, repo) {
     if (meta.description) parts.push(`Description: ${meta.description}`);
     if (meta.language) parts.push(`Primary language: ${meta.language}`);
     if (meta.stargazers_count != null) parts.push(`Stars: ${meta.stargazers_count}`);
+    if (meta.forks_count != null) parts.push(`Forks: ${meta.forks_count}`);
+    if (meta.open_issues_count != null) parts.push(`Open issues: ${meta.open_issues_count}`);
     if (meta.topics?.length) parts.push(`Topics: ${meta.topics.join(", ")}`);
+    if (meta.created_at) parts.push(`Created: ${meta.created_at.slice(0, 10)}`);
+    if (meta.pushed_at) parts.push(`Last push: ${meta.pushed_at.slice(0, 10)}`);
+    if (meta.license?.spdx_id) parts.push(`License: ${meta.license.spdx_id}`);
     context += parts.join("\n") + "\n\n";
+  }
+
+  // Languages breakdown
+  if (langRes) {
+    const langs = await langRes.json();
+    if (langs && typeof langs === "object" && Object.keys(langs).length) {
+      const total = Object.values(langs).reduce((a, b) => a + b, 0);
+      const breakdown = Object.entries(langs)
+        .map(([lang, bytes]) => `${lang}: ${((bytes / total) * 100).toFixed(1)}%`)
+        .join(", ");
+      context += `Languages: ${breakdown}\n\n`;
+    }
   }
 
   // File tree
@@ -62,10 +82,35 @@ async function fetchRepoContext(owner, repo) {
     if (tree.tree) {
       const paths = tree.tree
         .filter((e) => e.type === "blob" || e.type === "tree")
-        .slice(0, 100)
+        .slice(0, 200)
         .map((e) => e.path);
-      context += "File tree (top entries):\n" + paths.join("\n") + "\n\n";
+      context += "File tree:\n" + paths.join("\n") + "\n\n";
     }
+  }
+
+  // Recent commits
+  if (commitsRes) {
+    const commits = await commitsRes.json();
+    if (Array.isArray(commits) && commits.length) {
+      const log = commits
+        .map((c) => `${c.commit.message.split("\n")[0]} (${c.commit.author?.date?.slice(0, 10) || "?"})`)
+        .join("\n");
+      context += "Recent commits:\n" + log + "\n\n";
+    }
+  }
+
+  // package.json (dependencies reveal intent)
+  if (pkgRes) {
+    try {
+      const pkg = await pkgRes.json();
+      const parts = [];
+      if (pkg.name) parts.push(`Package: ${pkg.name}`);
+      if (pkg.description) parts.push(`Description: ${pkg.description}`);
+      if (pkg.scripts) parts.push(`Scripts: ${Object.keys(pkg.scripts).join(", ")}`);
+      if (pkg.dependencies) parts.push(`Dependencies: ${Object.keys(pkg.dependencies).join(", ")}`);
+      if (pkg.devDependencies) parts.push(`Dev dependencies: ${Object.keys(pkg.devDependencies).join(", ")}`);
+      if (parts.length) context += parts.join("\n") + "\n\n";
+    } catch {}
   }
 
   // README
@@ -73,7 +118,7 @@ async function fetchRepoContext(owner, repo) {
     const readme = await readmeRes.json();
     if (readme.content) {
       const decoded = Buffer.from(readme.content, "base64").toString("utf-8");
-      context += "README (excerpt):\n" + decoded.slice(0, 4000) + "\n";
+      context += "README:\n" + decoded.slice(0, 6000) + "\n";
     }
   }
 
@@ -134,16 +179,11 @@ Before you touch a single axiom, analyze what you actually see:
 Apply the Flinch Test to your own analysis — if swapping this repo URL for any other wouldn't change your reading, you've said nothing.
 
 ### Phase 2: The Axiom Reading
-Now — and only now — select 1-3 axioms that speak to what you found. Use the situation mapping:
+Now — and only now — select 1-3 axioms that speak to what you found.
 
-- Repo is scattered, unfocused → **starting new work** axioms (0.6, 1.1, 1.5, Law 2)
-- Repo is over-planned, under-built → **overthinking** axioms (11.3, 1.4, 8.6, 1.6)
-- Repo has strong foundation, unclear direction → **decision point** axioms (1.3, 10.6, Law 7)
-- Repo is actively being built → **building** axioms (6.5, 6.6, 7.4, 4.6, Law 5)
-- Repo shows signs of stalling → **stuck or circling** axioms (11.1, 10.1, Law 11, Law 12)
-- Repo has shipped, needs refinement → **reviewing output** axioms (12.1, 12.4, 12.5, Law 13)
-- Repo shows craft and care → **creative work** axioms (6.2, 7.6, 8.4, Law 3)
-- Repo has failed experiments or pivots → **failure** axioms (2.4, 5.2, 7.5, Law 4)
+**CRITICAL: You have 208 axioms and 13 Laws. USE THE FULL RANGE.** Do not default to the same comfortable handful. The obscure axioms — 0.3, 2.6, 3.5, 4.2, 5.6, 8.3 — are often more piercing than the obvious ones. Every reading should feel like it could only belong to THIS repo. If you've used an axiom recently, reach for a different one. The Step Cores (the bolded first axiom of each step) are especially underused — consider them.
+
+Let the specific details you observed in Phase 1 lead you to the axiom, not the other way around. Don't categorize the repo into a bucket and then pick from a preset list. Instead: what ONE specific thing did you notice that no other repo would show? Find the axiom that speaks to THAT.
 
 ### Format for Repo Readings
 
