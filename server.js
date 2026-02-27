@@ -731,18 +731,11 @@ const server = createServer(async (req, res) => {
     try {
       // Check for GitHub repo URL
       const repoMatch = question.match(GITHUB_REPO_RE);
-      let userMessage = question;
-      let maxTokens = 1024;
+      let repoContext = null;
 
       if (repoMatch) {
         const [, owner, repo] = repoMatch;
-        const repoContext = await fetchRepoContext(owner, repo.replace(/\.git$/, ""));
-        if (repoContext) {
-          userMessage =
-            `[GitHub Repository Context]\n${repoContext}\n[End Context]\n\n` +
-            question;
-          maxTokens = 2048;
-        }
+        repoContext = await fetchRepoContext(owner, repo.replace(/\.git$/, ""));
       }
 
       res.writeHead(200, {
@@ -751,24 +744,101 @@ const server = createServer(async (req, res) => {
         Connection: "keep-alive",
       });
 
-      const stream = client.messages.stream({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: maxTokens,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: "user", content: userMessage }],
-      });
+      if (repoMatch && repoContext) {
+        // === TWO-PASS FLOW ===
 
-      for await (const event of stream) {
-        if (
-          event.type === "content_block_delta" &&
-          event.delta.type === "text_delta"
-        ) {
-          res.write(`data: ${JSON.stringify({ text: event.delta.text })}\n\n`);
+        // Pass 1: Perception
+        let diagnosticText = "";
+        try {
+          const diagnosticStream = client.messages.stream({
+            model: "claude-sonnet-4-20250514",
+            max_tokens: 512,
+            system: PERCEPTION_PROMPT,
+            messages: [{ role: "user", content: repoContext }],
+          });
+
+          for await (const event of diagnosticStream) {
+            if (
+              event.type === "content_block_delta" &&
+              event.delta.type === "text_delta"
+            ) {
+              diagnosticText += event.delta.text;
+              res.write(
+                `data: ${JSON.stringify({ type: "diagnostic", text: event.delta.text })}\n\n`
+              );
+            }
+          }
+        } catch (err) {
+          console.error("Pass 1 error:", err.message);
+          if (diagnosticText) {
+            // Mid-stream failure
+            res.write(
+              `data: ${JSON.stringify({ type: "error", text: "The oracle's perception faltered." })}\n\n`
+            );
+          } else {
+            // Pre-stream failure
+            res.write(
+              `data: ${JSON.stringify({ type: "error", text: "The oracle could not perceive." })}\n\n`
+            );
+          }
+          res.write("data: [DONE]\n\n");
+          res.end();
+          return;
         }
-      }
 
-      res.write("data: [DONE]\n\n");
-      res.end();
+        // Separator
+        res.write(`data: ${JSON.stringify({ type: "separator" })}\n\n`);
+
+        // Pass 2: Reading
+        try {
+          const readingStream = client.messages.stream({
+            model: "claude-sonnet-4-20250514",
+            max_tokens: 2048,
+            system: READING_PROMPT,
+            messages: [{ role: "user", content: diagnosticText }],
+          });
+
+          for await (const event of readingStream) {
+            if (
+              event.type === "content_block_delta" &&
+              event.delta.type === "text_delta"
+            ) {
+              res.write(
+                `data: ${JSON.stringify({ type: "reading", text: event.delta.text })}\n\n`
+              );
+            }
+          }
+        } catch (err) {
+          console.error("Pass 2 error:", err.message);
+          res.write(
+            `data: ${JSON.stringify({ type: "error", text: "The oracle saw clearly but could not speak." })}\n\n`
+          );
+        }
+
+        res.write("data: [DONE]\n\n");
+        res.end();
+
+      } else {
+        // === SINGLE-PASS FLOW (non-repo queries) ===
+        const stream = client.messages.stream({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1024,
+          system: GENERAL_PROMPT,
+          messages: [{ role: "user", content: question }],
+        });
+
+        for await (const event of stream) {
+          if (
+            event.type === "content_block_delta" &&
+            event.delta.type === "text_delta"
+          ) {
+            res.write(`data: ${JSON.stringify({ type: "reading", text: event.delta.text })}\n\n`);
+          }
+        }
+
+        res.write("data: [DONE]\n\n");
+        res.end();
+      }
     } catch (err) {
       console.error("Claude API error:", err.message);
       if (!res.headersSent) {
@@ -808,6 +878,7 @@ const server = createServer(async (req, res) => {
     readings.set(id, {
       repoName: data.repoName || null,
       repoUrl: data.repoUrl || null,
+      diagnostic: data.diagnostic || null,
       reading: data.reading,
       createdAt: Date.now(),
     });
