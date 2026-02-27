@@ -49,6 +49,82 @@ const STOPWORDS = new Set([
   "but", "while", "through", "without", "rather", "before", "after", "during", "between",
 ]);
 
+// ─── Stochastic axiom windowing ──────────────────────────────────
+
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function tokenize(text) {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s'-]/g, "")
+    .split(/\s+/)
+    .filter(w => w.length > 1 && !STOPWORDS.has(w));
+}
+
+function buildAxiomWindow(diagnosticText) {
+  const window = new Set();
+
+  // Pool 1: Stratified sample (~27)
+  // 2 per group for groups with 5+ axioms, 1 for smaller groups
+  for (const group of AXIOM_GROUPS) {
+    const drawCount = group.ids.length >= 5 ? 2 : 1;
+    const shuffled = shuffleArray(group.ids);
+    for (let i = 0; i < drawCount; i++) {
+      window.add(shuffled[i]);
+    }
+  }
+
+  // Pool 2: Cold boost (10 least-used axioms not already in window)
+  const sortedByUsage = Object.entries(axiomUsage)
+    .filter(([id]) => !window.has(id))
+    .sort((a, b) => a[1] - b[1] || Math.random() - 0.5); // ties broken randomly
+  for (let i = 0; i < Math.min(10, sortedByUsage.length); i++) {
+    window.add(sortedByUsage[i][0]);
+  }
+
+  // Pool 3: Diagnostic match (top 5 by keyword overlap, not already in window)
+  const diagWords = new Set(tokenize(diagnosticText));
+  const scores = Object.entries(axiomTags)
+    .filter(([id]) => !window.has(id))
+    .map(([id, tag]) => {
+      const tagWords = tokenize(tag);
+      const score = tagWords.filter(w => diagWords.has(w)).length;
+      return { id, score };
+    })
+    .filter(s => s.score > 0)
+    .sort((a, b) => b.score - a.score);
+  for (let i = 0; i < Math.min(5, scores.length); i++) {
+    window.add(scores[i].id);
+  }
+
+  const axiomIds = [...window];
+  const index = axiomIds
+    .map(id => `${id}: ${axiomTags[id]}`)
+    .join("\n");
+
+  return { index, axiomIds };
+}
+
+function updateAxiomUsage(citedAxiomIds) {
+  for (const id of citedAxiomIds) {
+    if (id in axiomUsage) {
+      axiomUsage[id]++;
+    }
+  }
+  // Async flush to disk — fire and forget
+  writeFileFs(
+    new URL("./axiom-usage.json", import.meta.url),
+    JSON.stringify(axiomUsage, null, 2)
+  ).catch(err => console.error("Failed to flush axiom usage:", err.message));
+}
+
 const PORT = process.env.PORT || 3000;
 
 // In-memory readings store for shareable URLs
