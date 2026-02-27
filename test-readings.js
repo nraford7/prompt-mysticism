@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { fetchRepoContext, PERCEPTION_PROMPT, READING_PROMPT } from "./server.js";
+import { fetchRepoContext, PERCEPTION_PROMPT, buildAxiomWindow, buildReadingPrompt, updateAxiomUsage } from "./server.js";
 import { writeFile, readFile, mkdir } from "fs/promises";
 import { existsSync } from "fs";
 
@@ -154,16 +154,20 @@ async function runReading(owner, repo) {
   });
   const diagnostic = diagnosticResponse.content[0].text;
 
-  // Pass 2: Reading
+  // Build windowed axiom set from diagnostic
+  const axiomWindow = buildAxiomWindow(diagnostic);
+  const windowedPrompt = buildReadingPrompt(axiomWindow.index);
+
+  // Pass 2: Reading (with windowed axiom set)
   const readingResponse = await client.messages.create({
     model: "claude-sonnet-4-20250514",
     max_tokens: 2048,
-    system: READING_PROMPT,
+    system: windowedPrompt,
     messages: [{ role: "user", content: diagnostic }],
   });
   const reading = readingResponse.content[0].text;
 
-  return { diagnostic, reading };
+  return { diagnostic, reading, windowAxiomIds: axiomWindow.axiomIds };
 }
 
 // ─── N-gram extraction for similarity analysis ─────────────────────
@@ -316,6 +320,25 @@ function analyze(readings) {
     }
   }
 
+  // 9. Window diversity (if windowing data present)
+  let windowDiversity = null;
+  const windowedReadings = readings.filter(r => r.windowAxiomIds);
+  if (windowedReadings.length > 0) {
+    const allWindowAxioms = new Set();
+    const windowSizes = [];
+    for (const r of windowedReadings) {
+      windowSizes.push(r.windowAxiomIds.length);
+      for (const id of r.windowAxiomIds) allWindowAxioms.add(id);
+    }
+    const avgWindowSize = windowSizes.reduce((a, b) => a + b, 0) / windowSizes.length;
+    windowDiversity = {
+      totalUniqueInWindows: allWindowAxioms.size,
+      avgWindowSize: avgWindowSize.toFixed(1),
+      minWindowSize: Math.min(...windowSizes),
+      maxWindowSize: Math.max(...windowSizes),
+    };
+  }
+
   return {
     totalReadings,
     axiomCounts: sorted,
@@ -343,6 +366,7 @@ function analyze(readings) {
       pct: ((used.length / ALL_AXIOMS.length) * 100).toFixed(1),
     },
     diagnosticLensCounts,
+    windowDiversity,
   };
 }
 
@@ -537,6 +561,17 @@ Do repos in the same domain get the same axioms?
   }
   md += `\n`;
 
+  if (analysis.windowDiversity) {
+    const wd = analysis.windowDiversity;
+    md += `## Window Diversity\n\n`;
+    md += `Stochastic axiom windowing active. Each reading received a unique axiom window.\n\n`;
+    md += `| Metric | Value |\n|--------|-------|\n`;
+    md += `| Unique axioms across all windows | ${wd.totalUniqueInWindows} of ${analysis.coverage.total} |\n`;
+    md += `| Avg window size | ${wd.avgWindowSize} |\n`;
+    md += `| Window size range | ${wd.minWindowSize}–${wd.maxWindowSize} |\n`;
+    md += `\n`;
+  }
+
   md += `
 ---
 
@@ -661,11 +696,14 @@ async function main() {
         continue;
       }
 
-      const { diagnostic, reading: text } = result;
+      const { diagnostic, reading: text, windowAxiomIds } = result;
       const axioms = extractAxioms(text);
       const wordCount = text.split(/\s+/).filter(Boolean).length;
 
-      results.push({ owner, repo, category, lang, text, diagnostic, axioms, wordCount });
+      // Update axiom usage for cold boost self-correction
+      updateAxiomUsage(axioms);
+
+      results.push({ owner, repo, category, lang, text, diagnostic, axioms, wordCount, windowAxiomIds });
 
       // Incremental save
       await writeFile(READINGS_FILE, JSON.stringify(results, null, 2));
