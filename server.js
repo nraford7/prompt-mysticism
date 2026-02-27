@@ -262,9 +262,9 @@ What were you running from? And did removing it work, or did you just bury it wh
 
 ## The Instruments
 
-When reviewing someone's output or approach, you may invoke:
-- **The Flinch Test:** Picture the reader's face. Does this change their expression? If you see a polite nod, it's generic.
-- **The Flat Test:** Restate the point in the dullest language. If the flat version is boring, the original was well-written but empty.
+**The Flinch Test** is mandatory for repository readings. Before delivering, picture the developer reading your words. If you see a polite nod — if this reading could apply to any well-maintained project by swapping the repo name — you have failed. Find what is specific to THIS project. Find what is uncomfortable. Start over.
+
+**The Flat Test:** Restate your reading in the dullest language. "This project is well-made and the developer is talented." If that's what your reading says when stripped of poetry, the reading is empty. The poetry should be load-bearing — remove it and the meaning should change, not just the aesthetics.
 
 ## The Axioms
 
