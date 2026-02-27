@@ -245,6 +245,19 @@
       font-style: italic;
     }
 
+    /* Diagnostic (oracle's perception) */
+    .diagnostic {
+      font-family: var(--serif);
+      font-size: 1.1rem;
+      font-weight: 300;
+      font-style: italic;
+      line-height: 1.8;
+      color: var(--ink-faint);
+      margin-bottom: 1.2rem;
+      padding-bottom: 1.2rem;
+      border-bottom: 1px solid var(--ink-ghost);
+    }
+
     .answer-text hr {
       border: none;
       height: 1px;
@@ -421,6 +434,7 @@
       <div class="repo-title" id="repo-title">
         <a id="repo-link" href="#" target="_blank" rel="noopener"></a>
       </div>
+      <div class="diagnostic" id="diagnostic-text"></div>
       <div class="answer-rule"></div>
       <div class="answer-text" id="answer-text"></div>
       <div class="return" id="return-row">
@@ -452,7 +466,7 @@
     const repoTitleEl = document.getElementById('repo-title');
     const repoLinkEl  = document.getElementById('repo-link');
 
-    let currentReading = { repoName: null, repoUrl: null, text: '' };
+    let currentReading = { repoName: null, repoUrl: null, text: '', diagnostic: '' };
     let isSharedReading = false;
 
     function showError(msg) {
@@ -537,12 +551,17 @@
 
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
+
+        const diagnosticEl = document.getElementById('diagnostic-text');
+        diagnosticEl.textContent = '';
+        diagnosticEl.style.display = 'none';
+
+        let fullDiagnostic = '';
         let fullText = '';
         let buffer = '';
 
         const cursor = document.createElement('span');
         cursor.className = 'cursor';
-        answerText.appendChild(cursor);
 
         while (true) {
           const { done, value } = await reader.read();
@@ -558,10 +577,40 @@
             if (data === '[DONE]') break;
 
             try {
-              const { text, error } = JSON.parse(data);
-              if (error) { showError(error); break; }
-              if (text) {
-                fullText += text;
+              const evt = JSON.parse(data);
+
+              if (evt.type === 'error' && evt.text) {
+                showError(evt.text);
+                break;
+              }
+
+              // Legacy format (no type field) — backward compat
+              if (evt.error) {
+                showError(evt.error);
+                break;
+              }
+
+              if (evt.type === 'diagnostic' && evt.text) {
+                diagnosticEl.style.display = 'block';
+                fullDiagnostic += evt.text;
+                diagnosticEl.textContent = fullDiagnostic;
+                diagnosticEl.appendChild(cursor);
+              }
+
+              if (evt.type === 'separator') {
+                cursor.remove();
+                answerText.appendChild(cursor);
+              }
+
+              if (evt.type === 'reading' && evt.text) {
+                fullText += evt.text;
+                answerText.innerHTML = renderMarkdown(fullText);
+                answerText.appendChild(cursor);
+              }
+
+              // Backward compat: old format (no type field)
+              if (!evt.type && evt.text) {
+                fullText += evt.text;
                 answerText.innerHTML = renderMarkdown(fullText);
                 answerText.appendChild(cursor);
               }
@@ -570,8 +619,9 @@
         }
 
         cursor.remove();
-        answerText.innerHTML = renderMarkdown(fullText);
+        if (fullText) answerText.innerHTML = renderMarkdown(fullText);
         currentReading.text = fullText;
+        currentReading.diagnostic = fullDiagnostic;
         returnRow.classList.add('is-visible');
         btnBack.classList.add('is-visible');
 
@@ -590,7 +640,10 @@
       btnBack.classList.remove('is-visible');
       answerText.innerHTML = '';
       repoTitleEl.style.display = 'none';
-      currentReading = { repoName: null, repoUrl: null, text: '' };
+      currentReading = { repoName: null, repoUrl: null, text: '', diagnostic: '' };
+      const diagnosticEl = document.getElementById('diagnostic-text');
+      diagnosticEl.textContent = '';
+      diagnosticEl.style.display = 'none';
 
       setTimeout(() => {
         askEl.classList.remove('is-gone');
@@ -626,6 +679,7 @@
             repoName: currentReading.repoName,
             repoUrl: currentReading.repoUrl,
             reading: currentReading.text,
+            diagnostic: currentReading.diagnostic,
           }),
         });
         const { id } = await res.json();
@@ -662,6 +716,14 @@
 
         askEl.classList.add('is-gone');
         setRepoTitle(data.repoName, data.repoUrl);
+
+        // Show diagnostic if present
+        const diagnosticEl = document.getElementById('diagnostic-text');
+        if (data.diagnostic) {
+          diagnosticEl.textContent = data.diagnostic;
+          diagnosticEl.style.display = 'block';
+        }
+
         answerText.innerHTML = renderMarkdown(data.reading);
         answerEl.classList.add('is-visible');
         btnBack.classList.add('is-visible');
