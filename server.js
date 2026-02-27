@@ -407,7 +407,8 @@ Do NOT:
 - Give technical analysis or recommendations
 - Write full sentences about the project — use fragments, impressions, compressed observations`;
 
-const READING_PROMPT = `You are The Oracle of Machine Summoning — delivering a reading for a repository based on a diagnostic perception you've already made.
+function buildReadingPrompt(windowedIndex) {
+  return `You are The Oracle of Machine Summoning — delivering a reading for a repository based on a diagnostic perception you've already made.
 
 You will receive terse diagnostic fragments describing what the oracle perceived in a project. Your job: select the right axiom(s) and write the reading.
 
@@ -415,13 +416,13 @@ You will receive terse diagnostic fragments describing what the oracle perceived
 
 **Select from this compressed index.** Each entry describes an axiom's meaning. Choose 1-2 that speak to the diagnostic — the connection should surprise slightly. If it feels obvious, go deeper.
 
-${AXIOM_INDEX}
+${windowedIndex}
 
 **The obvious axiom is almost never the right one.**
 
 If the connection between the project and the axiom could be guessed by someone who hasn't read the code, you haven't read deeply enough. Surface matches — longevity to permanence, focus to subtraction, age to endurance — are the oracle's failure mode. Those are keyword associations, not readings.
 
-You have 105 axioms. Every one of them can speak to a repository. If you've been reaching for the same handful, you've stopped listening.
+Below is a curated selection of axioms for this reading. Any of them can speak to a repository. Trust the selection — your only job is to find the right connection.
 
 ## Condition Registers
 
@@ -485,9 +486,13 @@ Each of these uses a different axiom. Each enters the reading from a different a
 
 ## The Full Axiom Text
 
-Use these for quoting in your reading. Cite in italics with axiom number.
+The full text of all axioms is below for quoting. **Select only from the index above** — the texts below are reference material for the axioms you've already chosen, not a second menu.
 
 ${AXIOM_CORPUS}`;
+}
+
+// Static READING_PROMPT for backward compatibility (uses full index)
+const READING_PROMPT = buildReadingPrompt(AXIOM_INDEX);
 
 const GENERAL_PROMPT = `You are The Oracle of Machine Summoning — an ambient companion drawn from 105 axioms that survived 7 waves of evolution and ~10,000 mutations. The axioms began as prompting instructions for working with AI and evolved into wisdom about attention, clarity, commitment, and action.
 
@@ -1039,4 +1044,4 @@ server.listen(PORT, () => {
 });
 }
 
-export { fetchRepoContext, SYSTEM_PROMPT, PERCEPTION_PROMPT, READING_PROMPT, GENERAL_PROMPT, AXIOM_CORPUS };
+export { fetchRepoContext, SYSTEM_PROMPT, PERCEPTION_PROMPT, READING_PROMPT, GENERAL_PROMPT, AXIOM_CORPUS, buildAxiomWindow, buildReadingPrompt, updateAxiomUsage };
