@@ -904,12 +904,17 @@ const server = createServer(async (req, res) => {
         // Separator
         res.write(`data: ${JSON.stringify({ type: "separator" })}\n\n`);
 
-        // Pass 2: Reading
+        // Build windowed axiom index for this reading
+        const axiomWindow = buildAxiomWindow(diagnosticText);
+        const windowedPrompt = buildReadingPrompt(axiomWindow.index);
+
+        // Pass 2: Reading (with windowed axiom set)
+        let readingText = "";
         try {
           const readingStream = client.messages.stream({
             model: "claude-sonnet-4-20250514",
             max_tokens: 2048,
-            system: READING_PROMPT,
+            system: windowedPrompt,
             messages: [{ role: "user", content: diagnosticText }],
           });
 
@@ -918,6 +923,7 @@ const server = createServer(async (req, res) => {
               event.type === "content_block_delta" &&
               event.delta.type === "text_delta"
             ) {
+              readingText += event.delta.text;
               res.write(
                 `data: ${JSON.stringify({ type: "reading", text: event.delta.text })}\n\n`
               );
@@ -928,6 +934,33 @@ const server = createServer(async (req, res) => {
           res.write(
             `data: ${JSON.stringify({ type: "error", text: "The oracle saw clearly but could not speak." })}\n\n`
           );
+        }
+
+        // Update axiom usage counts (uses same patterns as extractAxioms in test harness)
+        if (readingText) {
+          const cited = new Set();
+          // "Axiom X.Y" pattern
+          for (const m of readingText.matchAll(/Axiom\s+(\d+\.\d+)/gi)) {
+            if (m[1] in axiomUsage) cited.add(m[1]);
+          }
+          // "— X.Y" dash-prefixed citation
+          for (const m of readingText.matchAll(/—\s*(\d+\.\d+)/g)) {
+            if (m[1] in axiomUsage) cited.add(m[1]);
+          }
+          // "*X.Y:" inline in italics
+          for (const m of readingText.matchAll(/\*(\d+\.\d+)\s*:/g)) {
+            if (m[1] in axiomUsage) cited.add(m[1]);
+          }
+          // "Law X"
+          for (const m of readingText.matchAll(/Law\s+(\d{1,2})\b/gi)) {
+            const num = parseInt(m[1]);
+            if (num >= 1 && num <= 13) cited.add(`Law ${num}`);
+          }
+          // "Step X Core"
+          for (const m of readingText.matchAll(/Step\s+(\d+)\s+Core/gi)) {
+            cited.add(`Step ${m[1]} Core`);
+          }
+          updateAxiomUsage([...cited]);
         }
 
         res.write("data: [DONE]\n\n");
