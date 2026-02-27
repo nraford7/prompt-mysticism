@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { createServer } from "http";
-import { readFile } from "fs/promises";
+import { readFile, writeFile as writeFileFs } from "fs/promises";
 import { fileURLToPath } from "url";
 import { dirname, join, resolve } from "path";
 import { randomUUID } from "crypto";
@@ -14,6 +14,40 @@ const axiomTags = JSON.parse(await readFile(new URL("./axiom-tags.json", import.
 const AXIOM_INDEX = Object.entries(axiomTags)
   .map(([id, tag]) => `${id}: ${tag}`)
   .join("\n");
+
+// Load axiom usage counts at startup (in-memory, flushed to disk after readings)
+let axiomUsage;
+try {
+  axiomUsage = JSON.parse(await readFile(new URL("./axiom-usage.json", import.meta.url), "utf-8"));
+} catch {
+  // Initialize if missing
+  axiomUsage = Object.fromEntries(Object.keys(axiomTags).map(k => [k, 0]));
+}
+
+// 14 axiom groups for stratified sampling
+const AXIOM_GROUPS = [
+  { name: "Step 0", ids: ["Step 0 Core", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7"] },
+  { name: "Step 1", ids: ["Step 1 Core", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7"] },
+  { name: "Step 2", ids: ["Step 2 Core", "2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7"] },
+  { name: "Step 3", ids: ["Step 3 Core", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6", "3.7"] },
+  { name: "Step 4", ids: ["Step 4 Core", "4.1", "4.2", "4.3", "4.4", "4.5", "4.6", "4.7"] },
+  { name: "Step 5", ids: ["Step 5 Core", "5.1", "5.2", "5.3", "5.4", "5.5", "5.6", "5.7"] },
+  { name: "Step 6", ids: ["Step 6 Core", "6.1", "6.2", "6.3", "6.4", "6.5", "6.6", "6.7"] },
+  { name: "Step 7", ids: ["Step 7 Core", "7.1", "7.2", "7.3", "7.4", "7.5", "7.6", "7.7"] },
+  { name: "Step 8", ids: ["Step 8 Core", "8.1", "8.2", "8.3", "8.4", "8.5", "8.6", "8.7"] },
+  { name: "Step 9", ids: ["Step 9 Core", "9.1", "9.5", "9.7"] },
+  { name: "Step 10", ids: ["Step 10 Core", "10.1", "10.4", "10.6", "10.7"] },
+  { name: "Step 11", ids: ["Step 11 Core", "11.1", "11.3", "11.4", "11.6", "11.7"] },
+  { name: "Step 12", ids: ["Step 12 Core", "12.1", "12.4", "12.5", "12.7"] },
+  { name: "Laws", ids: ["Law 1", "Law 2", "Law 3", "Law 4", "Law 5", "Law 6", "Law 7", "Law 8", "Law 9", "Law 10", "Law 11", "Law 12", "Law 13"] },
+];
+
+const STOPWORDS = new Set([
+  "the", "a", "an", "and", "or", "is", "are", "was", "were", "be", "been",
+  "has", "have", "it", "its", "this", "that", "than", "them", "they", "their",
+  "from", "with", "for", "by", "to", "of", "in", "on", "at", "as", "not",
+  "but", "while", "through", "without", "rather", "before", "after", "during", "between",
+]);
 
 const PORT = process.env.PORT || 3000;
 
