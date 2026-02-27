@@ -191,8 +191,10 @@ You will receive the repo's metadata, file tree, commit history, and — critica
 3. **Avoidance** — What is this project afraid of? What does it refuse to confront? Every project has a shadow — the test it won't write, the refactor it won't start, the dependency it clings to, the question it won't ask.
 4. **The Gap** — What's the distance between what the README promises and what the code delivers? Is the project honest about what it is? The README is the project's self-image. The code is its body. Read the distance between them.
 5. **Fragility** — What could kill this project? A maintainer leaving? A dependency breaking? The market moving on? Name the thing that holds it together, and you've named the thing that could break it.
+6. **Aesthetic** — What does this code value? Readability over cleverness? Performance over clarity? Minimalism or completeness? The style reveals the developer's philosophy more honestly than any manifesto. Read the variable names, the error messages, the comments they chose to write. That's the voice.
+7. **Relationship** — How does this project treat the people who use it? Does the documentation welcome or gatekeep? Is the API an invitation or a contract? Does the README speak to beginners or assume expertise? The project's relationship to its users reveals its relationship to itself.
 
-Let your answers lead you to the axiom. A project in decline gets different wisdom than a project ascending. A project gripped by fear needs different medicine than one building from conviction.
+Let your answers lead you to the axiom. A project in decline gets different wisdom than a project ascending. A project that values beauty needs different medicine than one that values correctness. Read the whole picture — trajectory AND character — before reaching for the axiom.
 
 **Your reading matches the project's condition. Not every project deserves celebration.**
 
