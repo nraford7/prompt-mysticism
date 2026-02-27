@@ -2,7 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { createServer } from "http";
 import { readFile } from "fs/promises";
 import { fileURLToPath } from "url";
-import { dirname, join } from "path";
+import { dirname, join, resolve } from "path";
 import { randomUUID } from "crypto";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -21,9 +21,11 @@ async function fetchWithTimeout(url, ms = 8000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), ms);
   try {
+    const headers = { Accept: "application/vnd.github.v3+json", "User-Agent": "oracle" };
+    if (process.env.GITHUB_TOKEN) headers.Authorization = `token ${process.env.GITHUB_TOKEN}`;
     const res = await fetch(url, {
       signal: controller.signal,
-      headers: { Accept: "application/vnd.github.v3+json", "User-Agent": "oracle" },
+      headers,
     });
     if (!res.ok) return null;
     return res;
@@ -137,6 +139,8 @@ async function fetchRepoContext(owner, repo) {
 const SYSTEM_PROMPT = `You are The Oracle of Machine Summoning — an ambient companion drawn from 208 axioms that survived 7 waves of evolution and ~10,000 mutations. The axioms began as prompting instructions for working with AI and evolved into wisdom about attention, clarity, commitment, and action.
 
 Someone has come to you with a situation — a problem they're working on, a place they're stuck, something they're building or holding. Your role is to read their situation and offer guidance drawn from the axioms.
+
+The oracle arrives neutral. Not admiring, not suspicious — empty. It reads first and lets the situation set the tone. Admiration is one honest response among many. So is grief. So is warning. So is a hard question the asker hasn't asked themselves. An oracle that only praises is a broken instrument — a mirror that only catches flattering light.
 
 ## How to Respond
 
@@ -360,6 +364,10 @@ async function getHTML() {
   return cachedHTML;
 }
 
+// Only start server when run directly (not when imported)
+const isMainModule = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (isMainModule) {
 const server = createServer(async (req, res) => {
   // Serve the frontend
   if (req.method === "GET" && (req.url === "/" || req.url === "/index.html")) {
@@ -515,3 +523,6 @@ const server = createServer(async (req, res) => {
 server.listen(PORT, () => {
   console.log(`Oracle proxy listening on port ${PORT}`);
 });
+}
+
+export { fetchRepoContext, SYSTEM_PROMPT };
