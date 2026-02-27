@@ -818,6 +818,13 @@ const server = createServer(async (req, res) => {
         res.write("data: [DONE]\n\n");
         res.end();
 
+      } else if (repoMatch && !repoContext) {
+        // Repo URL detected but context fetch failed
+        res.write(
+          `data: ${JSON.stringify({ type: "error", text: "The oracle could not reach that repository." })}\n\n`
+        );
+        res.write("data: [DONE]\n\n");
+        res.end();
       } else {
         // === SINGLE-PASS FLOW (non-repo queries) ===
         const stream = client.messages.stream({
@@ -846,7 +853,7 @@ const server = createServer(async (req, res) => {
         res.end(JSON.stringify({ error: "Oracle is silent. Try again." }));
       } else {
         res.write(
-          `data: ${JSON.stringify({ error: "The oracle faltered." })}\n\n`
+          `data: ${JSON.stringify({ type: "error", text: "The oracle faltered." })}\n\n`
         );
         res.end();
       }
