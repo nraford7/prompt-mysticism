@@ -156,7 +156,7 @@ async function runReading(owner, repo) {
 
   // Build windowed axiom set from diagnostic
   const axiomWindow = buildAxiomWindow(diagnostic);
-  const windowedPrompt = buildReadingPrompt(axiomWindow.index);
+  const windowedPrompt = buildReadingPrompt(axiomWindow.index, axiomWindow.axiomIds);
 
   // Pass 2: Reading (with windowed axiom set)
   const readingResponse = await client.messages.create({

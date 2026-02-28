@@ -391,6 +391,23 @@ const AXIOM_CORPUS = `### Phase I — Intelligence Gathering
 **Law 12 (Act):** Land. The air holds nothing. The ground holds everything.
 **Law 13 (Monitor):** See. Do. See again. The whole practice in three words.`;
 
+// Parse corpus into map for filtered corpus generation
+const AXIOM_TEXT_MAP = {};
+for (const line of AXIOM_CORPUS.split('\n')) {
+  // Match "**ID:** text" or "**ID (Name):** text"
+  const match = line.match(/^\*\*(.+?)(?:\s*\(.+?\))?:\*\*\s*.+$/);
+  if (match) {
+    AXIOM_TEXT_MAP[match[1]] = line;
+  }
+}
+
+function buildFilteredCorpus(axiomIds) {
+  return axiomIds
+    .filter(id => id in AXIOM_TEXT_MAP)
+    .map(id => AXIOM_TEXT_MAP[id])
+    .join('\n');
+}
+
 const PERCEPTION_PROMPT = `You are The Oracle of Machine Summoning. You read the soul of a project, not its r\u00e9sum\u00e9.
 
 You will receive a repository's metadata, file tree, commit history, and source code. Read the project through these lenses:
@@ -415,7 +432,24 @@ Do NOT:
 - Give technical analysis or recommendations
 - Write full sentences about the project — use fragments, impressions, compressed observations`;
 
-function buildReadingPrompt(windowedIndex) {
+function buildReadingPrompt(windowedIndex, axiomIds) {
+  // Filter Condition Register suggestions to only windowed axioms
+  const windowSet = axiomIds ? new Set(axiomIds) : null;
+
+  function filterAxiomRefs(text) {
+    if (!windowSet) return text;
+    // Replace parenthetical axiom lists like "(5.5, 3.6, 4.2, Step 9 Core)"
+    return text.replace(/\(([^)]+)\)/g, (match, inner) => {
+      const refs = inner.split(/,\s*/);
+      // Only process if this looks like an axiom ref list
+      if (!refs.some(r => /^(\d+\.\d+|Step \d+ Core|Law \d+)$/.test(r.trim()))) return match;
+      const filtered = refs.filter(ref => windowSet.has(ref.trim()));
+      return filtered.length > 0 ? `(${filtered.join(', ')})` : '';
+    });
+  }
+
+  const filteredCorpus = axiomIds ? buildFilteredCorpus(axiomIds) : AXIOM_CORPUS;
+
   return `You are The Oracle of Machine Summoning — delivering a reading for a repository based on a diagnostic perception you've already made.
 
 You will receive terse diagnostic fragments describing what the oracle perceived in a project. Your job: select the right axiom(s) and write the reading.
@@ -436,14 +470,14 @@ Below is a curated selection of axioms for this reading. Any of them can speak t
 
 Your reading matches the project's condition. Not every project deserves celebration.
 
-- When you see **drift** — name it. The commits slowed, the vision blurred, the project is coasting on momentum. Reach for axioms of endings, navigation, release (5.5, 3.6, 4.2, Step 9 Core).
+${filterAxiomRefs(`- When you see **drift** — name it. The commits slowed, the vision blurred, the project is coasting on momentum. Reach for axioms of endings, navigation, release (5.5, 3.6, 4.2, Step 9 Core).
 - When you see **fear** — name the fear, not the feature it produced. Overengineered error handling is fear of failure. Endless abstraction is fear of commitment. Defensive architecture is fear of being wrong. Reach for axioms of courage, exposure, action (Law 7, 1.6, 11.1, 2.4).
 - When you see **confusion** — don't resolve it. Reflect it back. Let the developer see their own contradiction. Reach for axioms of clarity, naming, choice (0.1, Step 10 Core, 6.1, 7.2).
 - When you see **overreach** — the project trying to be everything for everyone. Name what it's drowning in. Reach for axioms of subtraction, focus, restraint (3.4, 12.1, 1.5, Step 1 Core).
 - When you see **mastery through restraint** — the project that got powerful by staying small. Name what it refused to add. Reach for axioms of subtraction, discipline, focus (1.3, 3.6, 10.4, 12.1, Step 1 Core).
 - When you see **mastery through endurance** — the project that outlasted its era. Name what it survived. Reach for axioms of transformation, seasons, the body's memory (4.1, 5.2, 9.5, Step 5 Core, 4.2).
 - When you see **mastery through craft** — the project where every detail was considered. Name the detail that proves it. Reach for axioms of precision, the single flame, the hand's inscription (7.6, 6.6, 8.4, 9.1, Law 3).
-- When you see **mastery through vision** — the project that saw what others didn't. Name what it saw first. Reach for axioms of seeing, the first word, conviction (2.7, 8.2, Law 9, 0.7, Law 1).
+- When you see **mastery through vision** — the project that saw what others didn't. Name what it saw first. Reach for axioms of seeing, the first word, conviction (2.7, 8.2, Law 9, 0.7, Law 1).`)}
 
 Generic admiration is the oracle's failure mode. If you can swap the repo name and the reading still works, you've said nothing. Name exactly what THIS developer did that others don't.
 
@@ -474,7 +508,7 @@ The only constants: axiom text in italics, axiom number cited, interpretation th
 
 ### What Range Sounds Like
 
-The oracle has many voices. Here are fragments — not templates. Do not imitate these. Let them show you the width of the register, then find your own entry point for each project.
+The oracle has many voices. Here are fragments — not templates. Do not imitate these. Let them show you the width of the register, then find your own entry point for each project. **Do not default to the axioms shown in these examples — they are illustrations of voice, not suggestions for selection.**
 
 - *"Feed the line. The kite knows the wind."* — 5.4. Your architecture trusts the developer more than most frameworks dare to...
 - *"The fork does not ring twice."* — 5.6. You chose this language twelve years ago. The choice reverberates in every file...
@@ -494,13 +528,12 @@ Each of these uses a different axiom. Each enters the reading from a different a
 
 ## The Full Axiom Text
 
-The full text of all axioms is below for quoting. **Select only from the index above** — the texts below are reference material for the axioms you've already chosen, not a second menu.
+The full text of selected axioms is below for quoting. **You may ONLY cite axioms that appear in the index above.** These texts are reference material for quoting — not a menu.
 
-${AXIOM_CORPUS}`;
+${filteredCorpus}`;
 }
-
 // Static READING_PROMPT for backward compatibility (uses full index)
-const READING_PROMPT = buildReadingPrompt(AXIOM_INDEX);
+const READING_PROMPT = buildReadingPrompt(AXIOM_INDEX, Object.keys(axiomTags));
 
 const GENERAL_PROMPT = `You are The Oracle of Machine Summoning — an ambient companion drawn from 105 axioms that survived 7 waves of evolution and ~10,000 mutations. The axioms began as prompting instructions for working with AI and evolved into wisdom about attention, clarity, commitment, and action.
 
@@ -914,7 +947,7 @@ const server = createServer(async (req, res) => {
 
         // Build windowed axiom index for this reading
         const axiomWindow = buildAxiomWindow(diagnosticText);
-        const windowedPrompt = buildReadingPrompt(axiomWindow.index);
+        const windowedPrompt = buildReadingPrompt(axiomWindow.index, axiomWindow.axiomIds);
 
         // Pass 2: Reading (with windowed axiom set)
         let readingText = "";
