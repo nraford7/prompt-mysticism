@@ -71,21 +71,29 @@ function tokenize(text) {
 function buildAxiomWindow(diagnosticText) {
   const window = new Set();
 
-  // Pool 1: Stratified sample (~27)
-  // 2 per group for groups with 5+ axioms, 1 for smaller groups
+  // Compute suppression threshold: mean + 1 stddev
+  const usageValues = Object.values(axiomUsage);
+  const mean = usageValues.length > 0 ? usageValues.reduce((a, b) => a + b, 0) / usageValues.length : 0;
+  const stdDev = usageValues.length > 0 ? Math.sqrt(usageValues.reduce((sum, v) => sum + (v - mean) ** 2, 0) / usageValues.length) : 0;
+  const suppressionThreshold = mean + stdDev;
+
+  // Pool 1: Stratified sample with suppression (~27)
+  // 2 per group for groups with 5+ eligible axioms, 1 for smaller groups
+  // Axioms above suppression threshold are excluded from the draw
   for (const group of AXIOM_GROUPS) {
-    const drawCount = group.ids.length >= 5 ? 2 : 1;
-    const shuffled = shuffleArray(group.ids);
+    const eligible = group.ids.filter(id => (axiomUsage[id] ?? 0) <= suppressionThreshold);
+    const drawCount = eligible.length >= 5 ? 2 : (eligible.length >= 1 ? 1 : 0);
+    const shuffled = shuffleArray(eligible);
     for (let i = 0; i < drawCount; i++) {
       window.add(shuffled[i]);
     }
   }
 
-  // Pool 2: Cold boost (10 least-used axioms not already in window)
+  // Pool 2: Cold boost (15 least-used axioms not already in window)
   const sortedByUsage = Object.entries(axiomUsage)
     .filter(([id]) => !window.has(id))
-    .sort((a, b) => a[1] - b[1] || Math.random() - 0.5); // ties broken randomly
-  for (let i = 0; i < Math.min(10, sortedByUsage.length); i++) {
+    .sort((a, b) => a[1] - b[1] || Math.random() - 0.5);
+  for (let i = 0; i < Math.min(15, sortedByUsage.length); i++) {
     window.add(sortedByUsage[i][0]);
   }
 
