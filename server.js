@@ -24,7 +24,7 @@ try {
   axiomUsage = Object.fromEntries(Object.keys(axiomTags).map(k => [k, 0]));
 }
 
-// 14 axiom groups for stratified sampling
+// 15 axiom groups for stratified sampling
 const AXIOM_GROUPS = [
   { name: "Step 0", ids: ["Step 0 Core", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7"] },
   { name: "Step 1", ids: ["Step 1 Core", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7"] },
@@ -39,7 +39,8 @@ const AXIOM_GROUPS = [
   { name: "Step 10", ids: ["Step 10 Core", "10.1", "10.4", "10.6", "10.7"] },
   { name: "Step 11", ids: ["Step 11 Core", "11.1", "11.3", "11.4", "11.6", "11.7"] },
   { name: "Step 12", ids: ["Step 12 Core", "12.1", "12.4", "12.5", "12.7"] },
-  { name: "Laws", ids: ["Law 1", "Law 2", "Law 3", "Law 4", "Law 5", "Law 6", "Law 7", "Law 8", "Law 9", "Law 10", "Law 11", "Law 12", "Law 13"] },
+  { name: "Laws 1-6", ids: ["Law 1", "Law 2", "Law 3", "Law 4", "Law 5", "Law 6"] },
+  { name: "Laws 7-13", ids: ["Law 7", "Law 8", "Law 9", "Law 10", "Law 11", "Law 12", "Law 13"] },
 ];
 
 const STOPWORDS = new Set([
