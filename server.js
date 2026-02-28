@@ -142,6 +142,7 @@ const readings = new Map();
 // --- GitHub repo fetching ---
 
 const GITHUB_REPO_RE = /github\.com\/([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+)/;
+const NON_GITHUB_REPO_RE = /^https?:\/\/(gitlab\.com|bitbucket\.org|codeberg\.org|sr\.ht|sourcehut\.org)\//i;
 
 async function fetchWithTimeout(url, ms = 8000) {
   const controller = new AbortController();
@@ -186,8 +187,31 @@ async function fetchRepoContext(owner, repo) {
   const base = `https://api.github.com/repos/${owner}/${repo}`;
   const raw = `https://raw.githubusercontent.com/${owner}/${repo}/HEAD`;
 
-  const [metaRes, treeRes, readmeRes, commitsRes] = await Promise.all([
-    fetchWithTimeout(base),
+  // Check repo accessibility first (inspect HTTP status for specific errors)
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  let metaRes;
+  let metaStatus = 0;
+  try {
+    const headers = { Accept: "application/vnd.github.v3+json", "User-Agent": "oracle" };
+    if (process.env.GITHUB_TOKEN) headers.Authorization = `token ${process.env.GITHUB_TOKEN}`;
+    metaRes = await fetch(base, { signal: controller.signal, headers });
+    metaStatus = metaRes.status;
+    if (!metaRes.ok) metaRes = null;
+  } catch {
+    metaRes = null;
+  } finally {
+    clearTimeout(timer);
+  }
+
+  if (!metaRes) {
+    if (metaStatus === 404) return { error: "not_found" };
+    if (metaStatus === 403) return { error: "private" };
+    return { error: "unreachable" };
+  }
+
+  // Fetch remaining data in parallel (these use existing fetchWithTimeout)
+  const [treeRes, readmeRes, commitsRes] = await Promise.all([
     fetchWithTimeout(`${base}/git/trees/HEAD?recursive=1`),
     fetchWithTimeout(`${base}/readme`),
     fetchWithTimeout(`${base}/commits?per_page=10`),
@@ -259,7 +283,7 @@ async function fetchRepoContext(owner, repo) {
     }
   }
 
-  return context || null;
+  return context ? { context } : { error: "unreachable" };
 }
 
 // The full axiom text — shared by READING_PROMPT and GENERAL_PROMPT
@@ -888,11 +912,11 @@ const server = createServer(async (req, res) => {
     try {
       // Check for GitHub repo URL
       const repoMatch = question.match(GITHUB_REPO_RE);
-      let repoContext = null;
+      let repoResult = null;
 
       if (repoMatch) {
         const [, owner, repo] = repoMatch;
-        repoContext = await fetchRepoContext(owner, repo.replace(/\.git$/, ""));
+        repoResult = await fetchRepoContext(owner, repo.replace(/\.git$/, ""));
       }
 
       res.writeHead(200, {
@@ -901,7 +925,14 @@ const server = createServer(async (req, res) => {
         Connection: "keep-alive",
       });
 
-      if (repoMatch && repoContext) {
+      // Non-GitHub repo URLs
+      if (!repoMatch && NON_GITHUB_REPO_RE.test(question)) {
+        res.write(
+          `data: ${JSON.stringify({ type: "error", text: "The oracle reads only GitHub repositories. Paste a github.com link." })}\n\n`
+        );
+        res.write("data: [DONE]\n\n");
+        res.end();
+      } else if (repoMatch && repoResult && repoResult.context) {
         // === TWO-PASS FLOW ===
 
         // Pass 1: Perception
@@ -911,7 +942,7 @@ const server = createServer(async (req, res) => {
             model: "claude-sonnet-4-20250514",
             max_tokens: 512,
             system: PERCEPTION_PROMPT,
-            messages: [{ role: "user", content: repoContext }],
+            messages: [{ role: "user", content: repoResult.context }],
           });
 
           for await (const event of diagnosticStream) {
@@ -1008,11 +1039,15 @@ const server = createServer(async (req, res) => {
         res.write("data: [DONE]\n\n");
         res.end();
 
-      } else if (repoMatch && !repoContext) {
-        // Repo URL detected but context fetch failed
-        res.write(
-          `data: ${JSON.stringify({ type: "error", text: "The oracle could not reach that repository." })}\n\n`
-        );
+      } else if (repoMatch && repoResult && repoResult.error) {
+        // Repo URL detected but context fetch failed — specific error
+        const errorMessages = {
+          not_found: "That repository does not exist\u2009—\u2009or it has been erased so completely that even the oracle cannot find its ghost.",
+          private: "That repository is sealed. The oracle reads only what is offered freely.",
+          unreachable: "The oracle cannot reach GitHub. The silence is on their end, not yours.",
+        };
+        const text = errorMessages[repoResult.error] || errorMessages.unreachable;
+        res.write(`data: ${JSON.stringify({ type: "error", text })}\n\n`);
         res.write("data: [DONE]\n\n");
         res.end();
       } else {

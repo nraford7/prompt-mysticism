@@ -385,6 +385,14 @@
       opacity: 1;
     }
 
+    .oracle-error {
+      font-family: var(--serif);
+      font-style: italic;
+      color: var(--ink-faint);
+      text-align: center;
+      margin-top: 2rem;
+    }
+
     /* -------------------------------------------------- */
     /* RESPONSIVE                                          */
     /* -------------------------------------------------- */
@@ -580,7 +588,14 @@
               const evt = JSON.parse(data);
 
               if (evt.type === 'error' && evt.text) {
-                showError(evt.text);
+                // Show as oracle statement in the answer area
+                waitingEl.classList.remove('is-visible');
+                setRepoTitle(null, null);
+                answerEl.classList.add('is-visible');
+                answerText.innerHTML = '<p class="oracle-error"><em>' + evt.text + '</em></p>';
+                btnBack.classList.add('is-visible');
+                returnRow.classList.add('is-visible');
+                cursor.remove();
                 break;
               }
 
